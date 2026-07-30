@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    font-family: 'Inter', 'Roboto', sans-serif;
+    touch-action: none; /* Prevent scroll on drag */
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 540px; /* Constrain for vertical mobile feel on PC */
+    background-color: #DDF4FF; /* Hyper-casual sky blue */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* UI Overlays */
+.ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through by default */
+    z-index: 10;
+}
+
+/* Buttons will enable pointer-events */
+.ui-button {
+    pointer-events: auto;
+}
