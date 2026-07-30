@@ -8,8 +8,8 @@ export class LeaderboardModal {
         overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;";
         
         const card = document.createElement("div");
-        // cardW = 500, cardH = 580
-        card.style.cssText = "background:#fbfaf5;border:8px solid #40C4FF;border-radius:24px;width:500px;height:580px;max-width:95vw;max-height:85vh;position:relative;box-shadow:0 15px 30px rgba(0,0,0,0.5); display:flex; flex-direction:column; align-items:center;";
+        // Update width to be strictly constrained by screen size with safe margins for the close button
+        card.style.cssText = "background:#fbfaf5;border:8px solid #40C4FF;border-radius:24px;width:500px;max-width:calc(100vw - 40px);height:580px;max-height:85vh;position:relative;box-shadow:0 15px 30px rgba(0,0,0,0.5); display:flex; flex-direction:column; align-items:center;";
         
         const handleResize = () => {
             const container = gameApp.renderer.domElement.parentElement;
@@ -29,25 +29,25 @@ export class LeaderboardModal {
             originalRemove();
         };
 
-        // Title Ribbon (Cyan)
+        // Title Ribbon (Cyan) - Responsive text sizing
         const ribbon = document.createElement("div");
-        ribbon.style.cssText = "position:absolute; top:-30px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 30px; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Inter', sans-serif; font-size:22px; font-weight:900; letter-spacing:2px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2;";
-        ribbon.innerText = "BẢNG VÀNG THÀNH TÍCH";
+        ribbon.style.cssText = "position:absolute; top:-25px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 0; width:70%; max-width:300px; text-align:center; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Inter', sans-serif; font-size:clamp(16px, 4.5vw, 22px); font-weight:900; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;";
+        ribbon.innerText = "BẢNG XẾP HẠNG";
         card.appendChild(ribbon);
 
         // Header Labels
         const header = document.createElement("div");
-        header.style.cssText = "display:flex; width:450px; max-width:90%; justify-content:space-between; margin-top:50px; color:#00B0FF; font-family:'Inter', sans-serif; font-weight:bold; font-size:18px; padding:0 20px; box-sizing:border-box;";
+        header.style.cssText = "display:flex; width:100%; justify-content:space-between; margin-top:50px; color:#00B0FF; font-family:'Inter', sans-serif; font-weight:bold; font-size:clamp(12px, 3.5vw, 16px); padding:0 20px; box-sizing:border-box;";
         header.innerHTML = `
             <span style="flex:1; text-align:left;">HẠNG</span>
-            <span style="flex:2; text-align:left; padding-left:30px;">THÀNH VIÊN</span>
-            <span style="flex:1; text-align:right;">ĐIỂM SỐ</span>
+            <span style="flex:2; text-align:left; padding-left:10px;">THÀNH VIÊN</span>
+            <span style="flex:1; text-align:right;">ĐIỂM</span>
         `;
         card.appendChild(header);
 
         // List Container
         const listContainer = document.createElement("div");
-        listContainer.style.cssText = "width:450px; max-width:90%; flex:1; overflow-y:auto; margin-top:10px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px;";
+        listContainer.style.cssText = "width:100%; flex:1; overflow-y:auto; margin-top:10px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; padding:0 20px; box-sizing:border-box;";
         
         // Mock Data
         const players = [
@@ -64,7 +64,7 @@ export class LeaderboardModal {
             const isEven = index % 2 === 0;
             const bg = isEven ? "#fffcf0" : "#f2eedb";
             
-            row.style.cssText = `display:flex; align-items:center; background:${bg}; border:1px solid #dcd6bf; border-radius:8px; padding:6px 20px; color:#241d4f; font-family:'Inter', sans-serif; font-weight:bold; font-size:18px;`;
+            row.style.cssText = `display:flex; align-items:center; background:${bg}; border:1px solid #dcd6bf; border-radius:8px; padding:6px 15px; color:#241d4f; font-family:'Inter', sans-serif; font-weight:bold; font-size:clamp(14px, 4vw, 18px); box-sizing:border-box;`;
             
             let rankStr = `${index + 1}`;
             if (index === 0) rankStr = "🥇";
@@ -72,12 +72,12 @@ export class LeaderboardModal {
             if (index === 2) rankStr = "🥉";
 
             row.innerHTML = `
-                <span style="flex:1; text-align:left; font-size:24px;">${rankStr}</span>
-                <div style="flex:2; display:flex; align-items:center; gap:10px;">
-                    <div style="width:28px; height:28px; border-radius:50%; background:#fff; border:2px solid #ddd; overflow:hidden;">
+                <span style="flex:1; text-align:left; font-size:clamp(18px, 5vw, 24px);">${rankStr}</span>
+                <div style="flex:2; display:flex; align-items:center; gap:8px; padding-left:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    <div style="width:24px; height:24px; border-radius:50%; background:#fff; border:2px solid #ddd; overflow:hidden; flex-shrink:0;">
                         <img src="/assets/image/imagebldp/001_avatar_laclac.png" style="width:100%; height:100%; object-fit:cover;">
                     </div>
-                    <span>${p.name}</span>
+                    <span style="overflow:hidden; text-overflow:ellipsis;">${p.name}</span>
                 </div>
                 <span style="flex:1; text-align:right;">${p.score}</span>
             `;
@@ -87,14 +87,14 @@ export class LeaderboardModal {
 
         // Pinned Footer (Personal Best)
         const footer = document.createElement("div");
-        footer.style.cssText = "width:450px; max-width:90%; background:#fff3cd; border:2px solid #ffea00; border-radius:8px; padding:10px 20px; display:flex; align-items:center; color:#241d4f; font-family:'Inter', sans-serif; font-weight:bold; font-size:18px; margin-bottom:30px; box-sizing:border-box;";
+        footer.style.cssText = "width:calc(100% - 40px); background:#fff3cd; border:2px solid #ffea00; border-radius:8px; padding:10px 15px; display:flex; align-items:center; color:#241d4f; font-family:'Inter', sans-serif; font-weight:bold; font-size:clamp(14px, 4vw, 18px); margin-bottom:30px; box-sizing:border-box;";
         footer.innerHTML = `
-            <span style="flex:1; text-align:left;">12</span>
-            <div style="flex:2; display:flex; align-items:center; gap:10px;">
-                <div style="width:28px; height:28px; border-radius:50%; background:#fff; border:2px solid #ddd; overflow:hidden;">
+            <span style="flex:1; text-align:left; font-size:clamp(16px, 4.5vw, 20px);">12</span>
+            <div style="flex:2; display:flex; align-items:center; gap:8px; padding-left:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <div style="width:24px; height:24px; border-radius:50%; background:#fff; border:2px solid #ddd; overflow:hidden; flex-shrink:0;">
                     <img src="/assets/image/imagebldp/001_avatar_laclac.png" style="width:100%; height:100%; object-fit:cover;">
                 </div>
-                <span>Bạn (Khách)</span>
+                <span style="overflow:hidden; text-overflow:ellipsis;">Bạn (Khách)</span>
             </div>
             <span style="flex:1; text-align:right;">2450</span>
         `;
