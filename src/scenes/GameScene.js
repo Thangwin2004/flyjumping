@@ -7,6 +7,9 @@ import { MainMenu } from '../ui/MainMenu';
 import { AdManager } from '../managers/AdManager';
 import { SettingsModal } from '../ui/SettingsModal';
 import { LandingVFX } from '../effects/LandingVFX';
+import { ConfettiVFX } from '../effects/ConfettiVFX';
+import { AudioManager } from '../managers/AudioManager';
+import gsap from 'gsap';
 
 export class GameScene extends THREE.Group {
     constructor() {
@@ -22,23 +25,50 @@ export class GameScene extends THREE.Group {
         this.landingVFX = new LandingVFX();
         this.add(this.landingVFX);
         
+        // Confetti VFX
+        this.confettiVFX = new ConfettiVFX();
+        this.add(this.confettiVFX);
+        
         // UI layer (HTML instead of Pixi)
         this.scoreElement = document.createElement('div');
         this.scoreElement.style.cssText = "position:absolute;top:20px;left:30px;font-family:'Lilita One', cursive;font-size:58px;color:#ffffff;-webkit-text-stroke:2px #F50057;text-shadow:0 6px 0 #F50057, 0 8px 15px rgba(0,0,0,0.4);z-index:100;pointer-events:none; letter-spacing: 2px;";
         this.scoreElement.innerText = "0";
         document.getElementById('game-container').appendChild(this.scoreElement);
         
-        // Settings Button (In-game)
-        this.settingsBtn = document.createElement('div');
-        this.settingsBtn.style.cssText = "position:absolute;top:20px;right:20px;width:44px;height:44px;background:#00ACC1;border:3px solid #fff;border-radius:50%;box-shadow:0 4px 0 #00838F, 0 4px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:100;font-size:24px;transition:transform 0.1s;";
-        this.settingsBtn.innerHTML = "⚙️";
-        this.settingsBtn.onmousedown = () => this.settingsBtn.style.transform = "translateY(4px)";
-        this.settingsBtn.onmouseup = () => this.settingsBtn.style.transform = "translateY(0)";
+        // Milestone Message Container
+        this.milestoneContainer = document.createElement('div');
+        this.milestoneContainer.style.cssText = "position:absolute;top:40%;left:50%;transform:translate(-50%, -50%) scale(0);display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:101;opacity:0;";
+        
+        this.milestoneEmoji = document.createElement('div');
+        this.milestoneEmoji.style.cssText = "font-size:72px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));";
+        
+        this.milestoneText = document.createElement('div');
+        this.milestoneText.style.cssText = "font-family:'Lilita One', cursive;font-size:42px;color:#FFF176;-webkit-text-stroke:1.5px #F57F17;text-shadow:0 4px 0 #F57F17, 0 4px 10px rgba(0,0,0,0.4);letter-spacing:1px;text-align:center;white-space:nowrap;";
+        
+        this.milestoneContainer.appendChild(this.milestoneEmoji);
+        this.milestoneContainer.appendChild(this.milestoneText);
+        document.getElementById('game-container').appendChild(this.milestoneContainer);
+        
+        // Settings Button (In-game) - Style matched with MainMenu
+        const settingsSvg = '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="#ffffff" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.49-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
+        this.settingsBtn = document.createElement('button');
+        this.settingsBtn.style.cssText = "position:absolute;top:20px;right:20px;width:50px;height:50px;border-radius:50%;border:3px solid #fff;background:linear-gradient(to bottom, #4FC3F7, #039BE5);box-shadow:0 4px 0 #0277BD, 0 4px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:100;transition:transform 0.1s;padding:0;";
+        this.settingsBtn.innerHTML = settingsSvg;
+        this.settingsBtn.onmousedown = () => this.settingsBtn.style.transform = "scale(0.9) translateY(4px)";
+        this.settingsBtn.onmouseup = () => this.settingsBtn.style.transform = "scale(1) translateY(0)";
+        this.settingsBtn.onmouseleave = () => this.settingsBtn.style.transform = "scale(1) translateY(0)";
+        
+        // Touch events
+        this.settingsBtn.addEventListener('touchstart', () => this.settingsBtn.style.transform = "scale(0.9) translateY(4px)", {passive: true});
+        this.settingsBtn.addEventListener('touchend', () => this.settingsBtn.style.transform = "scale(1) translateY(0)", {passive: true});
+
         this.settingsBtn.onclick = () => this.openSettings();
         document.getElementById('game-container').appendChild(this.settingsBtn);
         
         this.score = 0;
         this.state = 'playing'; // playing, gameover
+        this.graceTimer = 0; // Grace period timer
+        this.milestoneReached = 0;
         
         this.bindInput();
         this.tickerFunc = this.update.bind(this);
@@ -50,12 +80,22 @@ export class GameScene extends THREE.Group {
         this.highestScore = 0;
         this.highestPlatformIndex = 0;
         this.hasRevived = false;
+        this.graceTimer = 1.5; // 1.5 seconds of grace period where player cannot die
+        this.milestoneReached = 0;
         this.updateScore();
         this.scoreElement.style.display = 'block';
         this.settingsBtn.style.display = 'flex';
         
         this.platformManager.reset();
         this.player.reset();
+        
+        // Fix the drop issue: align player perfectly with start pedestal (index 1)
+        if (this.platformManager.platforms.length > 1) {
+            const startPad = this.platformManager.platforms[1];
+            this.player.position.x = startPad.position.x;
+            this.player.position.y = startPad.position.y + 35; // just above
+            this.player.jump(); // automatically jump to start moving
+        }
         
         // Reset camera
         gameApp.camera.position.y = gameApp.GAME_HEIGHT / 2;
@@ -73,7 +113,7 @@ export class GameScene extends THREE.Group {
         this.pointerDownHandler = (e) => {
             if (this.state !== 'playing') return;
             // Ignore if clicking settings button
-            if (e.target === this.settingsBtn) return;
+            if (e.target === this.settingsBtn || this.settingsBtn.contains(e.target)) return;
             
             this.player.isDragging = true;
             this.player.dragStartX = e.clientX;
@@ -99,19 +139,55 @@ export class GameScene extends THREE.Group {
         if (this.state !== 'playing' && this.state !== 'exploding') return;
         
         const dt = ticker.deltaTime;
+        const dtSec = dt / 60;
         
+        if (this.graceTimer > 0) {
+            this.graceTimer -= dtSec;
+        }
+
         if (this.state === 'exploding') {
             // Only update camera shake and explosion particles during explosion
             this.updateCamera();
-            this.updateExplosionParticles(dt / 60);
+            this.updateExplosionParticles(dtSec);
             return;
         }
         
         this.player.update(dt);
         this.platformManager.update(dt, gameApp.camera.position.y);
         
-        // Update landing VFX
-        this.landingVFX.update(dt / 60); // convert deltaTime to seconds
+        // Magnet effect: slowly pull player toward nearest platform horizontally if falling
+        if (this.player.hasMagnet && this.player.velocity.y < 0 && !this.player.isRocketing) {
+            let closestPlat = null;
+            let closestDist = 9999;
+            for (const p of this.platformManager.platforms) {
+                if (p.isBroken || p.type === 'spike') continue;
+                if (p.position.y < this.player.position.y) {
+                    const dist = Math.abs(this.player.position.x - p.position.x);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestPlat = p;
+                    }
+                }
+            }
+            if (closestPlat && closestDist < 200) {
+                // Pull horizontally
+                const pullDir = Math.sign(closestPlat.position.x - this.player.position.x);
+                this.player.velocity.x += pullDir * 80 * dtSec;
+            }
+        }
+
+        // Apply wind gust effects
+        if (this.platformManager.windGusts) {
+            for (const wind of this.platformManager.windGusts) {
+                if (wind.isPlayerInside(this.player.position.x, this.player.position.y)) {
+                    this.player.position.x += wind.getWindPush() * dtSec * 60; // scale force by frame
+                }
+            }
+        }
+
+        // Update landing VFX and Confetti
+        this.landingVFX.update(dtSec);
+        this.confettiVFX.update(dtSec);
         
         this.checkCollisions();
         this.updateCamera();
@@ -129,11 +205,13 @@ export class GameScene extends THREE.Group {
         // Score is the index minus 1 (so pedestal = 0, first jump = 1)
         const newScore = Math.max(0, maxIndexBelow - 1);
         
-        if (newScore !== this.score) {
-            const oldScore = this.score;
+        if (newScore > this.score) {
             this.score = newScore;
             this.updateScore();
             
+            // Check Milestones
+            this.checkMilestones(this.score);
+
             // Increase difficulty if we reached a new multiple of 10 going UP
             if (this.score > this.highestScore) {
                 if (Math.floor(this.score / 10) > Math.floor(this.highestScore / 10)) {
@@ -143,11 +221,61 @@ export class GameScene extends THREE.Group {
             }
         }
         
-        // Check game over
+        // Check game over (falling below screen)
         const screenBottom = gameApp.camera.position.y - gameApp.screenBounds.height / 2;
-        if (this.player.position.y < screenBottom - 50) {
+        if (this.graceTimer <= 0 && this.player.position.y < screenBottom - 50) {
             this.handleGameOver();
         }
+    }
+
+    checkMilestones(score) {
+        const milestones = [
+            { score: 50, msg: "Khởi đầu tốt!", emoji: "🌟" },
+            { score: 100, msg: "Nhảy giỏi đấy!", emoji: "🔥" },
+            { score: 150, msg: "Nửa đường rồi!", emoji: "💪" },
+            { score: 200, msg: "Incredible!", emoji: "🏆" },
+            { score: 250, msg: "Legendary!", emoji: "👑" },
+        ];
+
+        let targetMilestone = null;
+
+        // Check exact match in array
+        const exact = milestones.find(m => m.score === score);
+        if (exact) {
+            targetMilestone = exact;
+        } 
+        // 300+ case (every 50 points)
+        else if (score >= 300 && score % 50 === 0) {
+            targetMilestone = { score: score, msg: "Unstoppable!", emoji: "⚡" };
+        }
+
+        if (targetMilestone && this.milestoneReached < targetMilestone.score) {
+            this.milestoneReached = targetMilestone.score;
+            this.showMilestone(targetMilestone.msg, targetMilestone.emoji);
+        }
+    }
+
+    showMilestone(msg, emoji) {
+        this.milestoneText.innerText = msg;
+        this.milestoneEmoji.innerText = emoji;
+        
+        AudioManager.playMilestoneSFX();
+        
+        // Confetti at center of screen
+        const centerPos = new THREE.Vector3(gameApp.GAME_WIDTH / 2, gameApp.camera.position.y, 0);
+        this.confettiVFX.play(centerPos, 1.5);
+        
+        // Animate popup
+        gsap.killTweensOf(this.milestoneContainer);
+        gsap.fromTo(this.milestoneContainer, 
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" }
+        );
+        
+        // Hide after 2 seconds
+        gsap.to(this.milestoneContainer, {
+            scale: 0, opacity: 0, duration: 0.3, delay: 2.5, ease: "back.in(2)"
+        });
     }
 
     checkCollisions() {
@@ -157,6 +285,29 @@ export class GameScene extends THREE.Group {
         
         const screenBottom = gameApp.camera.position.y - gameApp.screenBounds.height / 2;
         
+        // BOOSTER COLLISIONS
+        if (this.platformManager.boosters) {
+            for (const booster of this.platformManager.boosters) {
+                if (booster.isCollected) continue;
+                
+                const dist = Math.hypot(px - booster.position.x, this.player.position.y - booster.position.y);
+                if (dist < this.player.radius + booster.radius) {
+                    if (booster.collect()) {
+                        switch (booster.boosterType) {
+                            case 'rocket': this.player.activateRocket(); break;
+                            case 'shield': this.player.activateShield(); break;
+                            case 'magnet': this.player.activateMagnet(); break;
+                            case 'slowmo': this.player.activateSlowMo(); break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Ignore platform/obstacle collisions while rocketing up
+        if (this.player.isRocketing) return;
+
+        // PLATFORM COLLISIONS
         for (const p of this.platformManager.platforms) {
             if (p.isBroken) continue;
             
@@ -169,60 +320,71 @@ export class GameScene extends THREE.Group {
             // Check horizontal range
             if (Math.abs(px - p.position.x) < p.platformWidth / 2 + this.player.radius * 0.5) {
                 
-                // Falling down -> land on top
-                if (this.player.velocity.y <= 0 && Math.abs(pyBottom - pTop) < 15) {
-                    this.player.position.y = pTop + this.player.radius; // snap to top
+                // Falling down -> land on top. Increased tolerance to 25px
+                if (this.player.velocity.y <= 0 && Math.abs(pyBottom - pTop) < 25) {
                     
-                    let hitSpring = false;
-                    if (p.hasSpring && p.springMesh) {
-                        const springWorldX = p.position.x + p.springMesh.position.x;
-                        // The spring is narrow, require player to land somewhat on it
-                        if (Math.abs(px - springWorldX) < 25) { 
-                            hitSpring = true;
+                    // Hit spike platform?
+                    if (p.type === 'spike') {
+                        if (!this.player.hasShield) {
+                            this.triggerDeathSequence(p.position);
+                            return; // Stop checking
+                        } else {
+                            // Break spike if we have shield, but still bounce slightly
+                            p.type = 'fragile'; // temporarily change type to break it
+                            p.break();
+                            this.player.jump();
                         }
-                    }
-                    
-                    // Trigger landing VFX
-                    const vfxColor = hitSpring ? 0xFFCA28 : 
-                        (p.type === 'moving' ? 0x40C4FF : 
-                         p.type === 'fragile' ? 0xFF80AB : 0x69F0AE);
-                    this.landingVFX.play(
-                        new THREE.Vector3(this.player.position.x, p.position.y + p.platformHeight / 2, 0),
-                        vfxColor
-                    );
-                    
-                    // 3D Effect: Platform squish on landing
-                    import('gsap').then(({ default: gsap }) => {
+                    } else {
+                        // Normal platform land
+                        this.player.position.y = pTop + this.player.radius; // snap to top
+                        
+                        let hitSpring = false;
+                        if (p.hasSpring && p.springMesh) {
+                            const springWorldX = p.position.x + p.springMesh.position.x;
+                            // The spring is narrow, require player to land somewhat on it
+                            if (Math.abs(px - springWorldX) < 25) { 
+                                hitSpring = true;
+                            }
+                        }
+                        
+                        // Trigger landing VFX
+                        const vfxColor = hitSpring ? 0xFFCA28 : 
+                            (p.type === 'moving' ? 0x40C4FF : 
+                             p.type === 'fragile' ? 0xFF80AB : 0x69F0AE);
+                        this.landingVFX.play(
+                            new THREE.Vector3(this.player.position.x, p.position.y + p.platformHeight / 2, 0),
+                            vfxColor
+                        );
+                        
+                        // 3D Effect: Platform squish on landing
                         gsap.killTweensOf(p.scale);
                         p.scale.set(1, 0.5, 1); // Squish down
                         gsap.to(p.scale, { y: 1, duration: 0.3, ease: "elastic.out(1, 0.4)" });
-                    });
-                    
-                    // 3D Effect: Camera micro-shake
-                    this.triggerCameraShake(hitSpring ? 4 : 2);
-                    
-                    if (hitSpring) {
-                        this.player.superJump();
-                        import('gsap').then(gsap => {
-                            gsap.default.to(p.springMesh.scale, {y: 0.2, duration: 0.1, yoyo: true, repeat: 1});
-                        });
-                    } else {
-                        this.player.jump();
-                    }
-                    
-                    if (!p.hasBeenLandedOn) {
-                        p.hasBeenLandedOn = true;
-                    }
+                        
+                        // 3D Effect: Camera micro-shake
+                        this.triggerCameraShake(hitSpring ? 4 : 2);
+                        
+                        if (hitSpring) {
+                            this.player.superJump();
+                            gsap.to(p.springMesh.scale, {y: 0.2, duration: 0.1, yoyo: true, repeat: 1});
+                        } else {
+                            this.player.jump();
+                        }
+                        
+                        if (!p.hasBeenLandedOn) {
+                            p.hasBeenLandedOn = true;
+                        }
 
-                    if (p.type === 'fragile') {
-                        p.break();
+                        if (p.type === 'fragile') {
+                            p.break();
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
         
-        // Check enemies
+        // ENEMY COLLISIONS
         if (this.platformManager.enemies) {
             for (const enemy of this.platformManager.enemies) {
                 if (enemy.isDead) continue;
@@ -230,97 +392,124 @@ export class GameScene extends THREE.Group {
                 const dist = Math.hypot(px - enemy.position.x, pyBottom - enemy.position.y);
                 // Reduce hitbox slightly to be fair
                 if (dist < this.player.radius + enemy.radius * 0.8) {
-                    // Hit enemy -> Explosion + fly toward camera!
-                    this.state = 'exploding'; // Prevent further updates
-                    
-                    // Strong camera shake
-                    this.triggerCameraShake(12);
-                    
-                    // Spawn explosion particles at enemy position
-                    this.spawnExplosion(enemy.position.clone());
-                    
-                    // Hide the enemy
-                    enemy.isDead = true;
-                    enemy.visible = false;
-                    
-                    // Play hit animation (Female Dance Pose)
-                    this.player.playHitAnim();
-                    
-                    // Animate player flying toward camera then slamming into screen
-                    const camY = gameApp.camera.position.y;
-                    const camX = gameApp.camera.position.x;
-                    
-                    import('gsap').then(({ default: gsap }) => {
-                        const tl = gsap.timeline();
-                        
-                        // Phase 1: Knocked back by explosion (0.2s) - tilt backward like being kicked
-                        tl.to(this.player.position, {
-                            y: this.player.position.y + 60, // Pop up from impact
-                            z: this.player.position.z - 30, // Knocked backward slightly
-                            duration: 0.2,
-                            ease: "power2.out"
-                        }, 0);
-                        tl.to(this.player.rotation, {
-                            x: -0.3, // Lean backward as if kicked
-                            duration: 0.2,
-                            ease: "power2.out"
-                        }, 0);
-                        
-                        // Phase 2: Fly straight toward camera with pose (0.5s)
-                        tl.to(this.player.position, {
-                            x: camX,
-                            y: camY,
-                            z: 600,
-                            duration: 0.5,
-                            ease: "power3.in"
-                        });
-                        tl.to(this.player.scale, {
-                            x: 5, y: 5, z: 5,
-                            duration: 0.5,
-                            ease: "power3.in"
-                        }, "<");
-                        tl.to(this.player.rotation, {
-                            x: 0.15, // Slight forward lean like flying face-first
-                            duration: 0.5,
-                            ease: "power2.inOut"
-                        }, "<");
-                        
-                        // Phase 3: SLAM into screen (0.1s)
-                        tl.to(this.player.scale, {
-                            x: 7, y: 7, z: 0.2, // Squished flat against screen
-                            duration: 0.1,
-                            ease: "power4.out"
-                        });
-                        tl.to(this.player.position, {
-                            z: 700,
-                            duration: 0.1,
-                            ease: "power4.out",
-                            onStart: () => {
-                                this.triggerCameraShake(20);
-                            }
-                        }, "<");
-                        tl.to(this.player.rotation, {
-                            x: 0, // Flatten rotation on impact
-                            duration: 0.1,
-                            ease: "power4.out"
-                        }, "<");
-                        
-                        // Phase 4: Stick to screen (0.6s) then game over
-                        tl.to({}, {
-                            duration: 0.6,
-                            onComplete: () => {
-                                this.player.visible = false;
-                                this.player.scale.set(1, 1, 1);
-                                this.player.rotation.set(0, 0, 0);
-                                this.player.position.z = 30;
-                                this.handleGameOver();
-                            }
-                        });
-                    });
-                    return;
+                    if (this.player.hasShield) {
+                        // Kill enemy, keep playing
+                        this.spawnExplosion(enemy.position.clone());
+                        enemy.isDead = true;
+                        enemy.visible = false;
+                        AudioManager.playSawBladeSFX(); // Reusing saw sound for enemy kill
+                        this.triggerCameraShake(5);
+                    } else {
+                        // Die
+                        this.triggerDeathSequence(enemy.position);
+                        enemy.isDead = true;
+                        enemy.visible = false;
+                        return;
+                    }
                 }
             }
         }
+
+        // SAW BLADE COLLISIONS
+        if (this.platformManager.sawBlades) {
+            for (const saw of this.platformManager.sawBlades) {
+                const dist = Math.hypot(px - saw.position.x, this.player.position.y - saw.position.y);
+                if (dist < this.player.radius + saw.radius * 0.8) {
+                    if (this.player.hasShield) {
+                        // Can't kill saw blade, just ignore with shield
+                    } else {
+                        AudioManager.playSawBladeSFX();
+                        this.triggerDeathSequence(saw.position);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    triggerDeathSequence(impactPos) {
+        if (this.graceTimer > 0) return; // Cannot die in grace period
+
+        this.state = 'exploding'; // Prevent further updates
+        
+        // Strong camera shake
+        this.triggerCameraShake(12);
+        
+        // Spawn explosion particles
+        this.spawnExplosion(impactPos.clone());
+        
+        // Play hit animation
+        this.player.playHitAnim();
+        
+        // Animate player flying toward camera then slamming into screen
+        const camY = gameApp.camera.position.y;
+        const camX = gameApp.camera.position.x;
+        
+        const tl = gsap.timeline();
+        
+        // Phase 1: Knocked back by explosion (0.2s)
+        tl.to(this.player.position, {
+            y: this.player.position.y + 60,
+            z: this.player.position.z - 30,
+            duration: 0.2,
+            ease: "power2.out"
+        }, 0);
+        tl.to(this.player.rotation, {
+            x: -0.3,
+            duration: 0.2,
+            ease: "power2.out"
+        }, 0);
+        
+        // Phase 2: Fly straight toward camera with pose (0.5s)
+        tl.to(this.player.position, {
+            x: camX,
+            y: camY,
+            z: 600,
+            duration: 0.5,
+            ease: "power3.in"
+        });
+        tl.to(this.player.scale, {
+            x: 5, y: 5, z: 5,
+            duration: 0.5,
+            ease: "power3.in"
+        }, "<");
+        tl.to(this.player.rotation, {
+            x: 0.15,
+            duration: 0.5,
+            ease: "power2.inOut"
+        }, "<");
+        
+        // Phase 3: SLAM into screen (0.1s)
+        tl.to(this.player.scale, {
+            x: 7, y: 7, z: 0.2,
+            duration: 0.1,
+            ease: "power4.out"
+        });
+        tl.to(this.player.position, {
+            z: 700,
+            duration: 0.1,
+            ease: "power4.out",
+            onStart: () => {
+                this.triggerCameraShake(20);
+            }
+        }, "<");
+        tl.to(this.player.rotation, {
+            x: 0,
+            duration: 0.1,
+            ease: "power4.out"
+        }, "<");
+        
+        // Phase 4: Stick to screen (0.6s) then game over
+        tl.to({}, {
+            duration: 0.6,
+            onComplete: () => {
+                this.player.visible = false;
+                this.player.scale.set(1, 1, 1);
+                this.player.rotation.set(0, 0, 0);
+                this.player.position.z = 30;
+                this.handleGameOver();
+            }
+        });
     }
 
     updateCamera() {
@@ -369,10 +558,8 @@ export class GameScene extends THREE.Group {
             },
             () => { // onQuit
                 this.cleanup();
-                import('../ui/MainMenu').then(({ MainMenu }) => {
-                    const menu = new MainMenu();
-                    menu.show();
-                });
+                const menu = new MainMenu();
+                menu.show();
             },
             () => { // onReplay
                 this.cleanup();
@@ -467,9 +654,9 @@ export class GameScene extends THREE.Group {
         this.state = 'playing';
         this.scoreElement.style.display = 'block';
         this.settingsBtn.style.display = 'flex';
+        this.graceTimer = 1.5; // New grace period
         
         // Get current screen bounds for camera
-        const cx = gameApp.camera.position.x;
         const cy = gameApp.camera.position.y;
         const sh = gameApp.screenBounds.height;
         
@@ -477,7 +664,7 @@ export class GameScene extends THREE.Group {
         const startY = cy - sh * 0.4;
         this.platformManager.revivePlatforms(startY);
         
-        this.player.velocity.set(0, 0, 0);
+        this.player.reset(); // Also resets boosters
         this.player.position.x = this.platformManager.platforms[0].position.x;
         this.player.position.y = this.platformManager.platforms[0].position.y + 50;
         
@@ -596,6 +783,9 @@ export class GameScene extends THREE.Group {
         }
         if (this.settingsBtn && this.settingsBtn.parentNode) {
             this.settingsBtn.parentNode.removeChild(this.settingsBtn);
+        }
+        if (this.milestoneContainer && this.milestoneContainer.parentNode) {
+            this.milestoneContainer.parentNode.removeChild(this.milestoneContainer);
         }
         
         gameApp.stage.remove(this);
