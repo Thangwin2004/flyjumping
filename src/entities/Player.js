@@ -86,6 +86,43 @@ export class Player extends THREE.Group {
         this.dragStartX = 0;
         
         this.bounds = gameApp.screenBounds;
+
+        // ========== BOOSTER STATES ==========
+        this.hasShield = false;
+        this.shieldTimer = 0;
+        this.shieldDuration = 8; // seconds
+
+        this.hasSlowMo = false;
+        this.slowMoTimer = 0;
+        this.slowMoDuration = 6; // seconds
+
+        this.hasMagnet = false;
+        this.magnetTimer = 0;
+        this.magnetDuration = 8; // seconds
+
+        this.isRocketing = false;
+        this.rocketTimer = 0;
+        this.rocketDuration = 1.5; // seconds of rocket flight
+
+        // Shield visual (bubble aura)
+        this.shieldMesh = null;
+        this.buildShieldAura();
+    }
+
+    buildShieldAura() {
+        const geom = new THREE.SphereGeometry(35, 16, 16);
+        const mat = new THREE.MeshStandardMaterial({
+            color: 0x4FC3F7,
+            transparent: true,
+            opacity: 0.25,
+            emissive: 0x4FC3F7,
+            emissiveIntensity: 0.4,
+            side: THREE.DoubleSide,
+            roughness: 0.1
+        });
+        this.shieldMesh = new THREE.Mesh(geom, mat);
+        this.shieldMesh.visible = false;
+        this.add(this.shieldMesh);
     }
 
     reset() {
@@ -102,11 +139,71 @@ export class Player extends THREE.Group {
             this.model.scale.set(this.baseScale, this.baseScale, this.baseScale);
         }
 
-        // Always play jump animation
+        // Always reset to jump animation (stop hit anim if it was playing)
         if (this.mixer && this.animations.jump) {
+            if (this.animations.hit) {
+                this.animations.hit.stop();
+                this.animations.hit.reset();
+            }
+            this.animations.jump.reset();
             this.animations.jump.play();
             this.currentAnim = 'jump';
         }
+
+        // Reset booster states
+        this.clearAllBoosters();
+        
+        // Reset visibility
+        this.visible = true;
+        this.rotation.set(0, 0, 0);
+        this.scale.set(1, 1, 1);
+    }
+
+    clearAllBoosters() {
+        this.hasShield = false;
+        this.shieldTimer = 0;
+        this.hasSlowMo = false;
+        this.slowMoTimer = 0;
+        this.hasMagnet = false;
+        this.magnetTimer = 0;
+        this.isRocketing = false;
+        this.rocketTimer = 0;
+
+        if (this.shieldMesh) this.shieldMesh.visible = false;
+    }
+
+    // ========== BOOSTER ACTIVATIONS ==========
+
+    activateRocket() {
+        this.isRocketing = true;
+        this.rocketTimer = 0;
+        this.velocity.y = 30; // Strong upward force
+        AudioManager.playBoosterSFX();
+    }
+
+    activateShield() {
+        this.hasShield = true;
+        this.shieldTimer = 0;
+        if (this.shieldMesh) {
+            this.shieldMesh.visible = true;
+            gsap.fromTo(this.shieldMesh.scale,
+                { x: 0.1, y: 0.1, z: 0.1 },
+                { x: 1, y: 1, z: 1, duration: 0.3, ease: "back.out(2)" }
+            );
+        }
+        AudioManager.playBoosterSFX();
+    }
+
+    activateMagnet() {
+        this.hasMagnet = true;
+        this.magnetTimer = 0;
+        AudioManager.playBoosterSFX();
+    }
+
+    activateSlowMo() {
+        this.hasSlowMo = true;
+        this.slowMoTimer = 0;
+        AudioManager.playBoosterSFX();
     }
 
     jump() {
@@ -152,9 +249,65 @@ export class Player extends THREE.Group {
         if (this.mixer) {
             this.mixer.update(dt / 60); // dt is in 60fps frames
         }
+
+        const dtSec = dt / 60;
         
-        // Apply gravity
-        this.velocity.y -= this.gravity * dt;
+        // ========== BOOSTER UPDATES ==========
+        
+        // Rocket mode: override gravity, fly upward
+        if (this.isRocketing) {
+            this.rocketTimer += dtSec;
+            this.velocity.y = 30; // Constant upward thrust
+            this.velocity.x *= 0.5; // Reduce horizontal control during rocket
+
+            if (this.rocketTimer >= this.rocketDuration) {
+                this.isRocketing = false;
+                this.velocity.y = this.jumpForce; // End with a normal jump boost
+            }
+        }
+
+        // Shield timer
+        if (this.hasShield) {
+            this.shieldTimer += dtSec;
+            // Pulse shield visual
+            if (this.shieldMesh) {
+                this.shieldMesh.material.opacity = 0.2 + Math.sin(this.shieldTimer * 4) * 0.1;
+                this.shieldMesh.rotation.y += dt * 0.02;
+            }
+            if (this.shieldTimer >= this.shieldDuration) {
+                this.hasShield = false;
+                if (this.shieldMesh) {
+                    gsap.to(this.shieldMesh.scale, {
+                        x: 0.1, y: 0.1, z: 0.1, duration: 0.3,
+                        onComplete: () => { this.shieldMesh.visible = false; this.shieldMesh.scale.set(1, 1, 1); }
+                    });
+                }
+            }
+        }
+
+        // Slow-Mo timer
+        if (this.hasSlowMo) {
+            this.slowMoTimer += dtSec;
+            if (this.slowMoTimer >= this.slowMoDuration) {
+                this.hasSlowMo = false;
+            }
+        }
+
+        // Magnet timer
+        if (this.hasMagnet) {
+            this.magnetTimer += dtSec;
+            if (this.magnetTimer >= this.magnetDuration) {
+                this.hasMagnet = false;
+            }
+        }
+
+        // ========== PHYSICS ==========
+        
+        // Apply gravity (modified by slow-mo)
+        const gravityMod = this.hasSlowMo ? 0.5 : 1.0;
+        if (!this.isRocketing) {
+            this.velocity.y -= this.gravity * dt * gravityMod;
+        }
         
         // Drag logic is handled by GameScene.js via setDragVelocity
 

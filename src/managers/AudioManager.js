@@ -21,8 +21,8 @@ export const AudioManager = {
         
         this.updateVolumes();
         
-        // Setup BGM
-        this.bgm = new Audio("/assets/music/music.mp3");
+        // Setup BGM - Use the disco track instead of the old music.mp3
+        this.bgm = new Audio("/assets/music/BGIG_Disco1.mp3");
         this.bgm.loop = true;
         
         const source = this.ctx.createMediaElementSource(this.bgm);
@@ -85,6 +85,80 @@ export const AudioManager = {
         
         osc.start();
         osc.stop(this.ctx.currentTime + 0.15);
+    },
+    
+    playBoosterSFX() {
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.2);
+        
+        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.4, this.ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+    },
+    
+    playMilestoneSFX() {
+        if (!this.ctx) return;
+        
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.sfxGain);
+        
+        osc1.type = "square";
+        osc2.type = "square";
+        
+        // Major chord arpeggio
+        osc1.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
+        osc1.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.1); // E5
+        osc1.frequency.setValueAtTime(783.99, this.ctx.currentTime + 0.2); // G5
+        osc1.frequency.setValueAtTime(1046.50, this.ctx.currentTime + 0.3); // C6
+        
+        osc2.frequency.setValueAtTime(261.63, this.ctx.currentTime); // C4
+        
+        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime + 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+        
+        osc1.start();
+        osc2.start();
+        osc1.stop(this.ctx.currentTime + 0.6);
+        osc2.stop(this.ctx.currentTime + 0.6);
+    },
+
+    playSawBladeSFX() {
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.3);
+        
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.3);
     },
 
     toggleBgm() {

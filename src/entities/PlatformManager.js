@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { Platform } from './Platform';
 import { Enemy } from './Enemy';
+import { Booster } from './Booster';
+import { SawBlade } from './SawBlade';
+import { WindGust } from './WindGust';
 import { gameApp } from '../core/Application';
 
 export class PlatformManager extends THREE.Group {
@@ -27,7 +30,17 @@ export class PlatformManager extends THREE.Group {
         this.difficulty = 1;
         this.platformGap = 120; // Slightly larger gap since the player can jump much higher now
         this.totalPlatformsSpawned = 0; // Track for scoring
-        this.enemies = []; // Track enemies
+        
+        // Destroy arrays for enemies and other entities
+        if (this.enemies) this.enemies.forEach(e => this.remove(e));
+        if (this.boosters) this.boosters.forEach(b => this.remove(b));
+        if (this.sawBlades) this.sawBlades.forEach(s => this.remove(s));
+        if (this.windGusts) this.windGusts.forEach(w => this.remove(w));
+
+        this.enemies = [];
+        this.boosters = [];
+        this.sawBlades = [];
+        this.windGusts = [];
 
         // Guarantee first platform is a massive ground floor
         const ground = new Platform('ground');
@@ -143,12 +156,15 @@ export class PlatformManager extends THREE.Group {
         }
         this.platforms = [];
         
-        if (this.enemies) {
-            for (const e of this.enemies) {
-                this.remove(e);
-            }
-            this.enemies = [];
-        }
+        if (this.enemies) this.enemies.forEach(e => this.remove(e));
+        if (this.boosters) this.boosters.forEach(b => this.remove(b));
+        if (this.sawBlades) this.sawBlades.forEach(s => this.remove(s));
+        if (this.windGusts) this.windGusts.forEach(w => this.remove(w));
+        
+        this.enemies = [];
+        this.boosters = [];
+        this.sawBlades = [];
+        this.windGusts = [];
         
         // Start from startY
         this.highestY = startY;
@@ -168,8 +184,23 @@ export class PlatformManager extends THREE.Group {
     spawnPlatform() {
         let type = 'normal';
         const rand = Math.random();
-        if (this.difficulty > 2 && rand < 0.2) type = 'moving';
-        else if (this.difficulty > 3 && rand < 0.4) type = 'fragile';
+        
+        // Adjust platform spawning probabilities
+        if (this.difficulty > 2 && rand < 0.15) type = 'moving';
+        else if (this.difficulty > 3 && rand > 0.15 && rand < 0.25) type = 'fragile';
+        else if (this.difficulty > 2 && rand >= 0.25 && rand < 0.35) type = 'spike';
+
+        // GUARD: Never allow consecutive spike/fragile platforms.
+        // After a spike the player MUST have a safe platform to land on,
+        // otherwise the game becomes unwinnable (softlock).
+        if ((type === 'spike' || type === 'fragile') && this.lastSpawnedType === 'spike') {
+            type = 'normal';
+        }
+        // Also prevent spike right after fragile (fragile breaks, next is spike = dead)
+        if (type === 'spike' && this.lastSpawnedType === 'fragile') {
+            type = 'normal';
+        }
+        this.lastSpawnedType = type;
 
         const platform = new Platform(type);
         platform.hasBeenLandedOn = false;
@@ -199,14 +230,54 @@ export class PlatformManager extends THREE.Group {
         
         this.platforms.push(platform);
         this.add(platform);
+
+        // --- SPATIAL ENTITY SPAWNING ---
         
-        // 5% chance to spawn an enemy hovering above this platform
-        if (this.totalPlatformsSpawned > 5 && !platform.hasSpring && Math.random() < 0.05) {
+        // Cannot spawn multiple special items on the same platform easily to avoid clutter
+        let spawnedSpecial = false;
+
+        // 1. Spiky Enemy (5% chance)
+        if (this.totalPlatformsSpawned > 5 && type !== 'spike' && !platform.hasSpring && Math.random() < 0.05 && !spawnedSpecial) {
             const enemy = new Enemy();
             enemy.position.x = platform.position.x;
             enemy.position.y = platform.position.y + 120 + Math.random() * 80; // Hovering in the air
             this.add(enemy);
             this.enemies.push(enemy);
+            spawnedSpecial = true;
+        }
+
+        // 2. Booster (8% chance)
+        if (this.totalPlatformsSpawned > 3 && type !== 'spike' && type !== 'fragile' && !platform.hasSpring && Math.random() < 0.08 && !spawnedSpecial) {
+            const types = ['rocket', 'shield', 'magnet', 'slowmo'];
+            const bType = types[Math.floor(Math.random() * types.length)];
+            const booster = new Booster(bType);
+            booster.position.x = platform.position.x;
+            booster.position.y = platform.position.y + 25; // Sit on platform
+            this.add(booster);
+            this.boosters.push(booster);
+            spawnedSpecial = true;
+        }
+
+        // 3. Saw Blade (8% chance, between current and next platform area)
+        if (this.difficulty > 3 && this.totalPlatformsSpawned > 10 && Math.random() < 0.08 && !spawnedSpecial) {
+            const sawBlade = new SawBlade(platform.position.y + 40, platform.position.y + gap - 40);
+            // Place it horizontally random but reachable
+            sawBlade.position.x = minX + 50 + Math.random() * (maxX - minX - 100);
+            sawBlade.position.y = platform.position.y + 40;
+            this.add(sawBlade);
+            this.sawBlades.push(sawBlade);
+            spawnedSpecial = true;
+        }
+
+        // 4. Wind Gust (6% chance, difficulty > 4)
+        if (this.difficulty > 4 && this.totalPlatformsSpawned > 20 && Math.random() < 0.06 && !spawnedSpecial) {
+            const direction = Math.random() > 0.5 ? 1 : -1;
+            const wind = new WindGust(direction);
+            wind.position.x = bounds.left + bounds.width / 2 + (Math.random() - 0.5) * 100; // rough center
+            wind.position.y = platform.position.y + gap / 2; // Mid air
+            this.add(wind);
+            this.windGusts.push(wind);
+            spawnedSpecial = true;
         }
     }
 
@@ -223,7 +294,7 @@ export class PlatformManager extends THREE.Group {
             if (p.platformIndex === 1) p.position.y = 220 - parallaxOffset;
         }
 
-        // Update enemies
+        // Update entities
         if (this.enemies) {
             for (let i = this.enemies.length - 1; i >= 0; i--) {
                 const enemy = this.enemies[i];
@@ -235,22 +306,53 @@ export class PlatformManager extends THREE.Group {
             }
         }
 
-        // Clean up platforms that have fallen far below the screen view
-        const screenBottom = gameApp.camera.position.y - gameApp.screenBounds.height / 2 - 200;
-        
-        for (let i = this.platforms.length - 1; i >= 0; i--) {
-            const p = this.platforms[i];
-            // If the platform is below the screen bottom
-            if (p.position.y < screenBottom) {
-                this.remove(p);
-                if (p.mesh) {
-                    p.mesh.geometry.dispose();
-                    if (Array.isArray(p.mesh.material)) p.mesh.material.forEach(m => m.dispose());
-                    else p.mesh.material.dispose();
-                }
-                this.platforms.splice(i, 1);
+        if (this.boosters) {
+            for (const b of this.boosters) {
+                b.update(dt);
             }
         }
+
+        if (this.sawBlades) {
+            for (const s of this.sawBlades) {
+                s.update(dt);
+            }
+        }
+
+        if (this.windGusts) {
+            for (const w of this.windGusts) {
+                w.update(dt);
+            }
+        }
+
+        // Clean up entities that have fallen far below the screen view
+        const screenBottom = gameApp.camera.position.y - gameApp.screenBounds.height / 2 - 200;
+        
+        // Generic cleanup function
+        const cleanupArray = (arr) => {
+            if (!arr) return;
+            for (let i = arr.length - 1; i >= 0; i--) {
+                const item = arr[i];
+                if (item.position.y < screenBottom) {
+                    this.remove(item);
+                    if (item.mesh || item.visual) {
+                        item.traverse(child => {
+                            if (child.isMesh) {
+                                child.geometry.dispose();
+                                if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+                                else child.material.dispose();
+                            }
+                        });
+                    }
+                    arr.splice(i, 1);
+                }
+            }
+        };
+
+        cleanupArray(this.platforms);
+        cleanupArray(this.enemies);
+        cleanupArray(this.boosters);
+        cleanupArray(this.sawBlades);
+        cleanupArray(this.windGusts);
         
         // Spawn new platforms if we are approaching highestY
         const screenTop = gameApp.camera.position.y + gameApp.screenBounds.height / 2 + 200;

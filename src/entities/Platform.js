@@ -14,6 +14,7 @@ export class Platform extends THREE.Group {
         let baseColor = 0x69F0AE; // vibrant mint green
         if (this.type === 'moving') baseColor = 0x40C4FF; // vibrant sky blue
         if (this.type === 'fragile') baseColor = 0xFF80AB; // vibrant pastel pink
+        if (this.type === 'spike') baseColor = 0x9E9E9E; // dark grey for spike platforms
         
         // 1. The main Pad (Glossy pastel look)
         const padGeom = new THREE.BoxGeometry(this.platformWidth, 12, this.platformDepth);
@@ -22,7 +23,7 @@ export class Platform extends THREE.Group {
             roughness: 0.2,
             metalness: 0.1,
             emissive: baseColor,
-            emissiveIntensity: 0.4
+            emissiveIntensity: this.type === 'spike' ? 0.1 : 0.4
         });
         this.padMesh = new THREE.Mesh(padGeom, padMat);
         this.padMesh.castShadow = true;
@@ -30,16 +31,18 @@ export class Platform extends THREE.Group {
         this.padMesh.position.y = 8;
         
         // Add a glossy top highlight for a "candy/jelly" look
-        const highlightGeom = new THREE.BoxGeometry(this.platformWidth - 6, 2, this.platformDepth - 6);
-        const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
-        const highlightMesh = new THREE.Mesh(highlightGeom, highlightMat);
-        highlightMesh.position.y = 6.1; // just above the pad
-        this.padMesh.add(highlightMesh);
+        if (this.type !== 'spike') {
+            const highlightGeom = new THREE.BoxGeometry(this.platformWidth - 6, 2, this.platformDepth - 6);
+            const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
+            const highlightMesh = new THREE.Mesh(highlightGeom, highlightMat);
+            highlightMesh.position.y = 6.1; // just above the pad
+            this.padMesh.add(highlightMesh);
+        }
 
         this.add(this.padMesh);
         
         // 2. The Springs underneath (Cute stacked rings for all platforms)
-        if (this.type !== 'ground' && this.type !== 'start') {
+        if (this.type !== 'ground' && this.type !== 'start' && this.type !== 'spike') {
             const springMat = new THREE.MeshStandardMaterial({ color: 0xFFE082, roughness: 0.3, metalness: 0.8 }); // Gold/Yellowish
             
             const createCoil = (xOffset) => {
@@ -60,6 +63,11 @@ export class Platform extends THREE.Group {
             this.add(createCoil(this.platformWidth / 3));
         }
 
+        // Spike platform: add spikes on top
+        if (this.type === 'spike') {
+            this.buildSpikes();
+        }
+
         // Tilt the whole platform slightly forward
         this.rotation.x = THREE.MathUtils.degToRad(12);
 
@@ -67,7 +75,7 @@ export class Platform extends THREE.Group {
         this.hasSpring = false;
         
         // 3. Super Spring (The 15% chance one)
-        if (this.type !== 'fragile' && this.type !== 'ground' && this.type !== 'start' && Math.random() < 0.15) {
+        if (this.type !== 'fragile' && this.type !== 'ground' && this.type !== 'start' && this.type !== 'spike' && Math.random() < 0.15) {
             this.hasSpring = true;
             this.springMesh = new THREE.Group();
             
@@ -108,6 +116,46 @@ export class Platform extends THREE.Group {
         
         if (type === 'moving') {
             this.velocity.x = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
+        }
+    }
+
+    buildSpikes() {
+        const spikeMat = new THREE.MeshStandardMaterial({
+            color: 0xD32F2F,
+            roughness: 0.4,
+            metalness: 0.6,
+            emissive: 0xD32F2F,
+            emissiveIntensity: 0.2
+        });
+
+        const spikeCount = 7;
+        for (let i = 0; i < spikeCount; i++) {
+            const spikeGeom = new THREE.ConeGeometry(4, 14, 5);
+            const spike = new THREE.Mesh(spikeGeom, spikeMat);
+
+            const xPos = ((i / (spikeCount - 1)) - 0.5) * (this.platformWidth - 16);
+            spike.position.set(xPos, 15, 0);
+            spike.castShadow = true;
+
+            this.padMesh.add(spike);
+        }
+
+        // Warning stripes on the platform
+        const stripeMat = new THREE.MeshBasicMaterial({
+            color: 0xFF5252,
+            transparent: true,
+            opacity: 0.5
+        });
+        for (let i = 0; i < 4; i++) {
+            const stripeGeom = new THREE.BoxGeometry(8, 1.5, this.platformDepth + 2);
+            const stripe = new THREE.Mesh(stripeGeom, stripeMat);
+            stripe.position.set(
+                ((i / 3) - 0.5) * (this.platformWidth - 20),
+                7,
+                0
+            );
+            stripe.rotation.y = Math.PI / 6;
+            this.padMesh.add(stripe);
         }
     }
 
