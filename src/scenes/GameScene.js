@@ -516,12 +516,12 @@ export class GameScene extends THREE.Group {
         tl.to(this.player.position, {
             x: camX,
             y: targetY,
-            z: 600,
+            z: 400,
             duration: 0.5,
             ease: "power3.in"
         });
         tl.to(this.player.scale, {
-            x: 5, y: 5, z: 5,
+            x: 2.5, y: 2.5, z: 2.5,
             duration: 0.5,
             ease: "power3.in"
         }, "<");
@@ -531,14 +531,23 @@ export class GameScene extends THREE.Group {
             ease: "power2.inOut"
         }, "<");
         
+        // Reset model rotation if it was tilted by velocity
+        if (this.player.model) {
+            tl.to(this.player.model.rotation, {
+                z: 0,
+                duration: 0.5,
+                ease: "power2.inOut"
+            }, "<");
+        }
+        
         // Phase 3: SLAM into screen (0.1s)
         tl.to(this.player.scale, {
-            x: 7, y: 7, z: 0.2,
+            x: 3.5, y: 3.5, z: 0.2,
             duration: 0.1,
             ease: "power4.out"
         });
         tl.to(this.player.position, {
-            z: 700,
+            z: 500,
             duration: 0.1,
             ease: "power4.out",
             onStart: () => {
