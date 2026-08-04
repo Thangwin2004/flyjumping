@@ -1,5 +1,6 @@
 import { UIBuilder } from './UIBuilder';
 import { gameApp } from '../core/Application';
+import { AudioManager } from '../managers/AudioManager';
 
 export class LeaderboardModal {
     show(onClose) {
@@ -105,6 +106,7 @@ export class LeaderboardModal {
         closeBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:44px; height:44px; border-radius:50%; border:3px solid #fff; background:linear-gradient(to bottom, #FF80AB, #FF4081); color:white; font-size:20px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #F50057; display:flex; align-items:center; justify-content:center; padding:0;";
         closeBtn.innerHTML = "✕";
         closeBtn.onclick = () => {
+            AudioManager.playClickSFX();
             overlay.remove();
             if (onClose) onClose();
         };

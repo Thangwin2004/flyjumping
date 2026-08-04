@@ -1,5 +1,6 @@
 import { AdManager } from '../managers/AdManager';
 import { gameApp } from '../core/Application';
+import { AudioManager } from '../managers/AudioManager';
 
 export const UIBuilder = {
     getUILayer() {
@@ -28,7 +29,10 @@ export const UIBuilder = {
         `;
         
         btn.innerHTML = iconSvgString;
-        btn.onclick = onClick;
+        btn.onclick = () => {
+            AudioManager.playClickSFX();
+            onClick();
+        };
         btn.onmousedown = () => btn.style.transform = "scale(0.9) translateY(4px)";
         btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
         btn.onmouseleave = () => btn.style.transform = "scale(1) translateY(0)";
@@ -50,7 +54,10 @@ export const UIBuilder = {
         `;
         
         btn.innerHTML = iconSvgString;
-        btn.onclick = onClick;
+        btn.onclick = () => {
+            AudioManager.playClickSFX();
+            onClick();
+        };
         btn.onmousedown = () => btn.style.transform = "scale(0.9) translateY(4px)";
         btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
         btn.onmouseleave = () => btn.style.transform = "scale(1) translateY(0)";
@@ -73,7 +80,10 @@ export const UIBuilder = {
         `;
         
         btn.innerHTML = text;
-        btn.onclick = onClick;
+        btn.onclick = () => {
+            AudioManager.playClickSFX();
+            onClick();
+        };
         btn.onmousedown = () => btn.style.transform = "scale(0.95) translateY(4px)";
         btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
         btn.onmouseleave = () => btn.style.transform = "scale(1) translateY(0)";
@@ -125,6 +135,7 @@ export const UIBuilder = {
         `;
         
         yesBtn.onclick = async () => {
+            AudioManager.playClickSFX();
             yesBtn.disabled = true;
             const success = await AdManager.showRewardedVideo();
             overlay.remove();
@@ -142,6 +153,7 @@ export const UIBuilder = {
         skipText.innerText = "Không, cảm ơn";
         skipText.style.cssText = "font-family:sans-serif;font-size:16px;color:#FF80AB;text-decoration:underline;cursor:pointer;font-weight:bold;";
         skipText.onclick = () => {
+            AudioManager.playClickSFX();
             overlay.remove();
             onSkip();
         };
