@@ -760,6 +760,42 @@ export class GameScene extends THREE.Group {
         const card = document.createElement('div');
         card.style.cssText = "background:#fbfaf5;border:6px solid #4FC3F7;border-radius:24px;padding:30px;text-align:center;width:300px;box-shadow:0 15px 30px rgba(0,0,0,0.5);";
         
+        // Custom SVG Trophy
+        const trophySvg = `
+        <svg viewBox="0 0 100 100" width="100" height="100" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6)); margin-bottom: 15px;">
+            <defs>
+                <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#FFF59D"/>
+                    <stop offset="30%" stop-color="#FFD54F"/>
+                    <stop offset="100%" stop-color="#F57F17"/>
+                </linearGradient>
+                <linearGradient id="base" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#78909C"/>
+                    <stop offset="100%" stop-color="#455A64"/>
+                </linearGradient>
+            </defs>
+            <!-- Handles -->
+            <path d="M 25 25 C 5 25 5 45 28 45" fill="none" stroke="url(#gold)" stroke-width="8" stroke-linecap="round"/>
+            <path d="M 75 25 C 95 25 95 45 72 45" fill="none" stroke="url(#gold)" stroke-width="8" stroke-linecap="round"/>
+            <!-- Base -->
+            <path d="M 30 85 L 70 85 L 65 70 L 35 70 Z" fill="url(#base)"/>
+            <rect x="25" y="85" width="50" height="10" rx="4" fill="url(#base)"/>
+            <!-- Stem -->
+            <rect x="42" y="60" width="16" height="15" fill="url(#gold)"/>
+            <rect x="35" y="55" width="30" height="6" rx="3" fill="url(#gold)"/>
+            <!-- Bowl -->
+            <path d="M 18 15 L 82 15 C 82 45 65 60 50 60 C 35 60 18 45 18 15 Z" fill="url(#gold)"/>
+            <rect x="15" y="10" width="70" height="6" rx="3" fill="#FFF59D"/>
+            <!-- Star -->
+            <polygon points="50,25 53,32 60,32 54,37 56,44 50,40 44,44 46,37 40,32 47,32" fill="#FFF59D"/>
+        </svg>`;
+        
+        const trophy = document.createElement('div');
+        trophy.innerHTML = trophySvg;
+        trophy.animate([
+            { transform: "scale(1)" }, { transform: "scale(1.1) rotate(5deg)" }, { transform: "scale(1)" }, { transform: "scale(1.1) rotate(-5deg)" }, { transform: "scale(1)" }
+        ], { duration: 2000, iterations: Infinity, easing: "ease-in-out" });
+
         const title = document.createElement('h2');
         title.innerText = "GAME OVER";
         title.style.cssText = "color:#ffffff; font-family:'Lilita One', cursive; margin-top:0; margin-bottom:5px; font-size: 36px; -webkit-text-stroke: 1.5px #0277BD; text-shadow: 0 4px 0 #0277BD, 0 6px 10px rgba(0,0,0,0.2); letter-spacing: 2px;";
@@ -800,7 +836,7 @@ export class GameScene extends THREE.Group {
         const svgs = {
             'home': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
             'replay': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M17.65 6.35A7.95 7.95 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>',
-            'ad': '<div style="font-family:\'Lilita One\', cursive; font-size:28px; color:#ffffff; padding-top:2px;">x2</div>'
+            'ad': '<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="#ffffff" d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span style="font-family:\'Lilita One\', cursive; font-size:22px; color:#ffffff; line-height:1; margin-top:-2px;">x2</span></div>'
         };
 
         const homeBtn = createNavBtn(svgs['home'], () => {
@@ -836,6 +872,7 @@ export class GameScene extends THREE.Group {
         btnContainer.appendChild(replayBtn);
         btnContainer.appendChild(doubleBtn);
         
+        card.appendChild(trophy);
         card.appendChild(title);
         card.appendChild(scoreText);
         card.appendChild(btnContainer);
