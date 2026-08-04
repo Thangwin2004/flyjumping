@@ -51,7 +51,10 @@ export class MainMenu {
                 display: flex; justify-content: center; align-items: center; padding: 0;
             `;
             btn.innerHTML = iconSvg;
-            btn.onclick = onClick;
+            btn.onclick = () => {
+                AudioManager.playClickSFX();
+                onClick();
+            };
             btn.onmousedown = () => btn.style.transform = "scale(0.9) translateY(4px)";
             btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
             btn.onmouseleave = () => btn.style.transform = "scale(1) translateY(0)";

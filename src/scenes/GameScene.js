@@ -63,7 +63,10 @@ export class GameScene extends THREE.Group {
         this.settingsBtn.addEventListener('touchstart', () => this.settingsBtn.style.transform = "scale(0.9) translateY(4px)", {passive: true});
         this.settingsBtn.addEventListener('touchend', () => this.settingsBtn.style.transform = "scale(1) translateY(0)", {passive: true});
 
-        this.settingsBtn.onclick = () => this.openSettings();
+        this.settingsBtn.onclick = () => {
+            AudioManager.playClickSFX();
+            this.openSettings();
+        };
         document.getElementById('game-container').appendChild(this.settingsBtn);
         
         this.score = 0;
@@ -450,6 +453,10 @@ export class GameScene extends THREE.Group {
         const camY = gameApp.camera.position.y;
         const camX = gameApp.camera.position.x;
         
+        // Account for the model's pivot being at the feet. When scaled to 7x, 
+        // the body is way above the center. Shift the target Y down so the body is centered.
+        const targetY = camY - 150; 
+        
         const tl = gsap.timeline();
         
         // Phase 1: Knocked back by explosion (0.2s)
@@ -468,7 +475,7 @@ export class GameScene extends THREE.Group {
         // Phase 2: Fly straight toward camera with pose (0.5s)
         tl.to(this.player.position, {
             x: camX,
-            y: camY,
+            y: targetY,
             z: 600,
             duration: 0.5,
             ease: "power3.in"
@@ -518,17 +525,20 @@ export class GameScene extends THREE.Group {
     }
 
     updateCamera() {
-        // We want camera to move UP when player goes UP.
-        const targetY = this.player.position.y + gameApp.screenBounds.height * 0.1; 
-        
-        if (targetY > gameApp.camera.position.y) {
-            gameApp.camera.position.y = targetY;
+        // Freeze camera movement during explosion so player can center perfectly
+        if (this.state !== 'exploding') {
+            // We want camera to move UP when player goes UP.
+            const targetY = this.player.position.y + gameApp.screenBounds.height * 0.1; 
             
-            // Move light with camera
-            if (gameApp.dirLight) {
-                gameApp.dirLight.position.y = targetY + 500;
-                gameApp.dirLight.target.position.y = targetY;
-                gameApp.dirLight.target.updateMatrixWorld();
+            if (targetY > gameApp.camera.position.y) {
+                gameApp.camera.position.y = targetY;
+                
+                // Move light with camera
+                if (gameApp.dirLight) {
+                    gameApp.dirLight.position.y = targetY + 500;
+                    gameApp.dirLight.target.position.y = targetY;
+                    gameApp.dirLight.target.updateMatrixWorld();
+                }
             }
         }
         

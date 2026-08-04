@@ -34,9 +34,9 @@ export const AudioManager = {
 
     updateVolumes() {
         if (!this.ctx) return;
-        // BGM is quiet, SFX is loud
-        this.bgmGain.gain.value = this.isBgmMuted ? 0 : 0.2;
-        this.sfxGain.gain.value = this.isSfxMuted ? 0 : 1.0;
+        // Adjusted per user request: BGM louder, SFX softer
+        this.bgmGain.gain.value = this.isBgmMuted ? 0 : 0.6;
+        this.sfxGain.gain.value = this.isSfxMuted ? 0 : 0.5;
     },
 
     playBGM() {
@@ -61,6 +61,27 @@ export const AudioManager = {
         osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.1);
         
         gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    },
+
+    playClickSFX() {
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1000, this.ctx.currentTime + 0.05);
+        
+        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.4, this.ctx.currentTime + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
         
         osc.start();

@@ -24,6 +24,7 @@ export class SettingsModal {
         closeIconBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:44px; height:44px; border-radius:50%; border:3px solid #fff; background:linear-gradient(to bottom, #FF80AB, #FF4081); color:white; font-size:20px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #F50057; display:flex; align-items:center; justify-content:center; padding:0;";
         closeIconBtn.innerHTML = "✕";
         closeIconBtn.onclick = () => {
+            AudioManager.playClickSFX();
             if (this.onQuit) { // If in game, close just closes settings
                document.body.removeChild(overlay);
                this.onResume();
@@ -57,7 +58,10 @@ export class SettingsModal {
             `;
             btn.innerHTML = `<span style="filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); display:flex;">${iconSvg}</span>`;
             
-            btn.onclick = onClick;
+            btn.onclick = () => {
+                AudioManager.playClickSFX();
+                onClick();
+            };
             btn.onmousedown = () => btn.style.transform = "scale(0.9) translateY(4px)";
             btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
             btn.onmouseleave = () => btn.style.transform = "scale(1) translateY(0)";
