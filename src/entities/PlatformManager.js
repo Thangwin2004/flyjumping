@@ -82,7 +82,7 @@ export class PlatformManager extends THREE.Group {
         const trampGroup = new THREE.Group();
         
         // Base rim (Soft white/pink, fluffy/rounded look)
-        const rimGeom = new THREE.TorusGeometry(55, 10, 16, 64);
+        const rimGeom = new THREE.TorusGeometry(55, 10, 8, 24);
         const rimMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 1.0, metalness: 0.0 });
         const rimMesh = new THREE.Mesh(rimGeom, rimMat);
         rimMesh.rotation.x = Math.PI / 2;
@@ -92,7 +92,7 @@ export class PlatformManager extends THREE.Group {
         trampGroup.add(rimMesh);
 
         // Bouncing pad surface (Solid glowing mint/cyan disc INSIDE the ring)
-        const padGeom = new THREE.CylinderGeometry(48, 48, 3, 64);
+        const padGeom = new THREE.CylinderGeometry(48, 48, 3, 24);
         const padMat = new THREE.MeshStandardMaterial({ 
             color: 0x81D4FA, 
             roughness: 0.3, 
@@ -117,7 +117,7 @@ export class PlatformManager extends THREE.Group {
         }
         
         // Inner glowing core circle
-        const coreGeom = new THREE.CylinderGeometry(15, 15, 4, 32);
+        const coreGeom = new THREE.CylinderGeometry(15, 15, 4, 16);
         const coreMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.6 });
         const coreMesh = new THREE.Mesh(coreGeom, coreMat);
         coreMesh.position.y = 3;

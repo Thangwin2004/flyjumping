@@ -3,6 +3,26 @@ import { gameApp } from '../core/Application';
 import { AudioManager } from '../managers/AudioManager';
 
 export class Platform extends THREE.Group {
+    // Shared geometry/material cache to avoid recreating per instance
+    static _sharedAssets = null;
+    
+    static getShared() {
+        if (!Platform._sharedAssets) {
+            Platform._sharedAssets = {
+                springMat: new THREE.MeshStandardMaterial({ color: 0xFFE082, roughness: 0.3, metalness: 0.8 }),
+                ringGeom: new THREE.TorusGeometry(6, 2, 6, 12),
+                superCoilMat: new THREE.MeshStandardMaterial({ color: 0xFFCA28, metalness: 1.0, roughness: 0.1, emissive: 0xFFCA28, emissiveIntensity: 0.3 }),
+                superRingGeom: new THREE.TorusGeometry(10, 3, 8, 16),
+                starPadGeom: new THREE.CylinderGeometry(18, 18, 6, 12),
+                starPadMat: new THREE.MeshStandardMaterial({ color: 0xFF5252, roughness: 0.2, emissive: 0xFF5252, emissiveIntensity: 0.6 }),
+                coreGeom: new THREE.CylinderGeometry(10, 10, 7, 12),
+                coreMat: new THREE.MeshBasicMaterial({ color: 0xFFFFFF }),
+                highlightMat: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 }),
+            };
+        }
+        return Platform._sharedAssets;
+    }
+    
     constructor(type = 'normal') {
         super();
         this.type = type;
@@ -33,8 +53,7 @@ export class Platform extends THREE.Group {
         // Add a glossy top highlight for a "candy/jelly" look
         if (this.type !== 'spike') {
             const highlightGeom = new THREE.BoxGeometry(this.platformWidth - 6, 2, this.platformDepth - 6);
-            const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
-            const highlightMesh = new THREE.Mesh(highlightGeom, highlightMat);
+            const highlightMesh = new THREE.Mesh(highlightGeom, Platform.getShared().highlightMat);
             highlightMesh.position.y = 6.1; // just above the pad
             this.padMesh.add(highlightMesh);
         }
@@ -43,13 +62,12 @@ export class Platform extends THREE.Group {
         
         // 2. The Springs underneath (Cute stacked rings for all platforms)
         if (this.type !== 'ground' && this.type !== 'start' && this.type !== 'spike') {
-            const springMat = new THREE.MeshStandardMaterial({ color: 0xFFE082, roughness: 0.3, metalness: 0.8 }); // Gold/Yellowish
+            const shared = Platform.getShared();
             
             const createCoil = (xOffset) => {
                 const coilGroup = new THREE.Group();
                 for (let i = 0; i < 3; i++) {
-                    const ringGeom = new THREE.TorusGeometry(6, 2, 8, 16);
-                    const ring = new THREE.Mesh(ringGeom, springMat);
+                    const ring = new THREE.Mesh(shared.ringGeom, shared.springMat);
                     ring.rotation.x = Math.PI / 2;
                     ring.position.y = i * 4 - 4;
                     ring.castShadow = true;
@@ -78,11 +96,11 @@ export class Platform extends THREE.Group {
         if (this.type !== 'fragile' && this.type !== 'ground' && this.type !== 'start' && this.type !== 'spike' && Math.random() < 0.15) {
             this.hasSpring = true;
             this.springMesh = new THREE.Group();
+            const shared = Platform.getShared();
             
             // Giant glowing coil
-            const superCoilMat = new THREE.MeshStandardMaterial({ color: 0xFFCA28, metalness: 1.0, roughness: 0.1, emissive: 0xFFCA28, emissiveIntensity: 0.3 });
             for (let i = 0; i < 4; i++) {
-                const ring = new THREE.Mesh(new THREE.TorusGeometry(10, 3, 12, 24), superCoilMat);
+                const ring = new THREE.Mesh(shared.superRingGeom, shared.superCoilMat);
                 ring.rotation.x = Math.PI / 2;
                 ring.position.y = i * 5;
                 ring.castShadow = true;
@@ -90,17 +108,13 @@ export class Platform extends THREE.Group {
             }
             
             // Magical Star Pad on top
-            const starPadGeom = new THREE.CylinderGeometry(18, 18, 6, 16);
-            const starPadMat = new THREE.MeshStandardMaterial({ color: 0xFF5252, roughness: 0.2, emissive: 0xFF5252, emissiveIntensity: 0.6 });
-            const starPad = new THREE.Mesh(starPadGeom, starPadMat);
+            const starPad = new THREE.Mesh(shared.starPadGeom, shared.starPadMat);
             starPad.position.y = 20; 
             starPad.castShadow = true;
             this.springMesh.add(starPad);
             
             // Center glowing core inside star pad
-            const coreGeom = new THREE.CylinderGeometry(10, 10, 7, 16);
-            const coreMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-            const coreMesh = new THREE.Mesh(coreGeom, coreMat);
+            const coreMesh = new THREE.Mesh(shared.coreGeom, shared.coreMat);
             coreMesh.position.y = 20;
             this.springMesh.add(coreMesh);
             
