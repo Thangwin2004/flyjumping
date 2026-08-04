@@ -140,7 +140,10 @@ class GameApplication {
         if (!this.isRunning) return;
         requestAnimationFrame(this.loop.bind(this));
         
-        const dt = this.clock.getDelta();
+        let dt = this.clock.getDelta();
+        // Cap dt to avoid physics explosions on lag spikes or long background times
+        if (dt > 0.1) dt = 0.1;
+
         // Emulate pixi ticker deltaTime (1.0 = 60fps = 16.6ms)
         this.ticker.deltaMS = dt * 1000;
         this.ticker.deltaTime = this.ticker.deltaMS / 16.666;
