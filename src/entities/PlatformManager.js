@@ -252,7 +252,7 @@ export class PlatformManager extends THREE.Group {
             const bType = types[Math.floor(Math.random() * types.length)];
             const booster = new Booster(bType);
             booster.position.x = platform.position.x;
-            booster.position.y = platform.position.y + 25; // Sit on platform
+            booster.position.y = platform.position.y + 45; // Hover above platform
             this.add(booster);
             this.boosters.push(booster);
             spawnedSpecial = true;
