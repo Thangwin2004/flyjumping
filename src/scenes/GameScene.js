@@ -248,18 +248,22 @@ export class GameScene extends THREE.Group {
         let targetMilestone = null;
 
         // Check exact match in array
-        const exact = milestones.find(m => m.score === score);
-        if (exact) {
-            targetMilestone = exact;
-        } 
+        for (const m of milestones) {
+            if (score === m.score) {
+                targetMilestone = m;
+                break;
+            }
+        }
         // 300+ case (every 50 points)
         else if (score >= 300 && score % 50 === 0) {
             targetMilestone = { score: score, msg: "Unstoppable!", emoji: "⚡" };
         }
 
-        if (targetMilestone && this.milestoneReached < targetMilestone.score) {
+        if (targetMilestone && this.milestoneReached !== targetMilestone.score) {
             this.milestoneReached = targetMilestone.score;
             this.showMilestone(targetMilestone.msg, targetMilestone.emoji);
+            if (window.winkGame) window.winkGame.triggerReward(); // Call generic reward function
+            this.spawnFireworks();
         }
     }
 
@@ -284,6 +288,42 @@ export class GameScene extends THREE.Group {
         gsap.to(this.milestoneContainer, {
             scale: 0, opacity: 0, duration: 0.3, delay: 2.5, ease: "back.in(2)"
         });
+    }
+
+    spawnFireworks() {
+        if (!this.explosionParticles) this.explosionParticles = [];
+        const colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFFFFFF];
+        
+        // Spawn 3 bursts of fireworks
+        for (let burst = 0; burst < 3; burst++) {
+            const burstX = this.player.position.x + (Math.random() - 0.5) * 200;
+            const burstY = this.player.position.y + 100 + Math.random() * 150;
+            
+            for (let i = 0; i < 40; i++) {
+                const size = 2 + Math.random() * 6;
+                const geom = new THREE.SphereGeometry(size, 4, 4);
+                const mat = new THREE.MeshBasicMaterial({
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    transparent: true,
+                    opacity: 1
+                });
+                
+                const particle = new THREE.Mesh(geom, mat);
+                particle.position.set(burstX, burstY, 30 + Math.random() * 50);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 100 + Math.random() * 200;
+                particle.userData = {
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    vz: (Math.random() - 0.5) * 100,
+                    life: 1.0 + Math.random() * 0.5
+                };
+                
+                this.add(particle);
+                this.explosionParticles.push(particle);
+            }
+        }
     }
 
     checkCollisions() {
@@ -711,42 +751,6 @@ export class GameScene extends THREE.Group {
         const card = document.createElement('div');
         card.style.cssText = "background:#fbfaf5;border:6px solid #4FC3F7;border-radius:24px;padding:30px;text-align:center;width:300px;box-shadow:0 15px 30px rgba(0,0,0,0.5);";
         
-        // Custom SVG Trophy
-        const trophySvg = `
-        <svg viewBox="0 0 100 100" width="100" height="100" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6)); margin-bottom: 15px;">
-            <defs>
-                <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#FFF59D"/>
-                    <stop offset="30%" stop-color="#FFD54F"/>
-                    <stop offset="100%" stop-color="#F57F17"/>
-                </linearGradient>
-                <linearGradient id="base" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#78909C"/>
-                    <stop offset="100%" stop-color="#455A64"/>
-                </linearGradient>
-            </defs>
-            <!-- Handles -->
-            <path d="M 25 25 C 5 25 5 45 28 45" fill="none" stroke="url(#gold)" stroke-width="8" stroke-linecap="round"/>
-            <path d="M 75 25 C 95 25 95 45 72 45" fill="none" stroke="url(#gold)" stroke-width="8" stroke-linecap="round"/>
-            <!-- Base -->
-            <path d="M 30 85 L 70 85 L 65 70 L 35 70 Z" fill="url(#base)"/>
-            <rect x="25" y="85" width="50" height="10" rx="4" fill="url(#base)"/>
-            <!-- Stem -->
-            <rect x="42" y="60" width="16" height="15" fill="url(#gold)"/>
-            <rect x="35" y="55" width="30" height="6" rx="3" fill="url(#gold)"/>
-            <!-- Bowl -->
-            <path d="M 18 15 L 82 15 C 82 45 65 60 50 60 C 35 60 18 45 18 15 Z" fill="url(#gold)"/>
-            <rect x="15" y="10" width="70" height="6" rx="3" fill="#FFF59D"/>
-            <!-- Star -->
-            <polygon points="50,25 53,32 60,32 54,37 56,44 50,40 44,44 46,37 40,32 47,32" fill="#FFF59D"/>
-        </svg>`;
-        
-        const trophy = document.createElement('div');
-        trophy.innerHTML = trophySvg;
-        trophy.animate([
-            { transform: "scale(1)" }, { transform: "scale(1.1) rotate(5deg)" }, { transform: "scale(1)" }, { transform: "scale(1.1) rotate(-5deg)" }, { transform: "scale(1)" }
-        ], { duration: 2000, iterations: Infinity, easing: "ease-in-out" });
-
         const title = document.createElement('h2');
         title.innerText = "GAME OVER";
         title.style.cssText = "color:#ffffff; font-family:'Lilita One', cursive; margin-top:0; margin-bottom:5px; font-size: 36px; -webkit-text-stroke: 1.5px #0277BD; text-shadow: 0 4px 0 #0277BD, 0 6px 10px rgba(0,0,0,0.2); letter-spacing: 2px;";
@@ -771,7 +775,10 @@ export class GameScene extends THREE.Group {
                 pointer-events: auto;
             `;
             btn.innerHTML = iconSvg;
-            btn.onclick = onClick;
+            btn.onclick = () => {
+                AudioManager.playClickSFX();
+                onClick();
+            };
             btn.onmousedown = () => btn.style.transform = "scale(0.9) translateY(4px)";
             btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
             btn.onmouseleave = () => btn.style.transform = "scale(1) translateY(0)";
@@ -820,7 +827,6 @@ export class GameScene extends THREE.Group {
         btnContainer.appendChild(replayBtn);
         btnContainer.appendChild(doubleBtn);
         
-        card.appendChild(trophy);
         card.appendChild(title);
         card.appendChild(scoreText);
         card.appendChild(btnContainer);

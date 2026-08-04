@@ -188,7 +188,7 @@ export class PlatformManager extends THREE.Group {
         // Adjust platform spawning probabilities
         if (this.difficulty > 2 && rand < 0.15) type = 'moving';
         else if (this.difficulty > 3 && rand > 0.15 && rand < 0.25) type = 'fragile';
-        else if (this.difficulty > 2 && rand >= 0.25 && rand < 0.35) type = 'spike';
+        else if (this.difficulty > 2 && rand >= 0.25 && rand < 0.32) type = 'spike'; // lowered from 0.35 to 0.32 (7% chance)
 
         // GUARD: Never allow consecutive spike/fragile platforms.
         // After a spike the player MUST have a safe platform to land on,
@@ -232,22 +232,26 @@ export class PlatformManager extends THREE.Group {
         this.add(platform);
 
         // --- SAFE ALTERNATIVE FOR SPIKE PLATFORMS ---
-        // If a spike platform spawns, it acts as a soft-lock/guaranteed death because the player CANNOT jump over it.
-        // Therefore, we MUST spawn a safe normal platform adjacent to it at the same Y level to provide a path.
+        // To ensure the player can always progress, the SPIKE platform should be placed far away,
+        // and the SAFE platform should be placed exactly where the spike was originally planned (reachable).
         if (type === 'spike') {
             const safePlatform = new Platform('normal');
             safePlatform.hasBeenLandedOn = false;
             safePlatform.platformIndex = this.totalPlatformsSpawned++;
             
-            // Place it sufficiently far from the spike platform (platform width is 100)
-            if (platform.position.x < (minX + maxX) / 2) {
-                // Spike is on the left, put safe on the right
-                safePlatform.position.x = Math.min(maxX, platform.position.x + 180);
-            } else {
-                // Spike is on the right, put safe on the left
-                safePlatform.position.x = Math.max(minX, platform.position.x - 180);
-            }
+            // Swap positions: safePlatform takes the reachable position
+            safePlatform.position.x = platform.position.x;
             safePlatform.position.y = this.highestY;
+            
+            // Move the spike platform to the opposite side of the screen
+            if (safePlatform.position.x < (minX + maxX) / 2) {
+                // Safe is on the left, put spike on the right
+                platform.position.x = Math.min(maxX, safePlatform.position.x + 160);
+            } else {
+                // Safe is on the right, put spike on the left
+                platform.position.x = Math.max(minX, safePlatform.position.x - 160);
+            }
+            
             this.platforms.push(safePlatform);
             this.add(safePlatform);
         }
