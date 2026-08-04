@@ -9,6 +9,7 @@ import { SettingsModal } from '../ui/SettingsModal';
 import { LandingVFX } from '../effects/LandingVFX';
 import { ConfettiVFX } from '../effects/ConfettiVFX';
 import { AudioManager } from '../managers/AudioManager';
+import { winkGame } from '../integrations/wink/wink-adapter.js';
 import gsap from 'gsap';
 
 export class GameScene extends THREE.Group {
@@ -82,6 +83,10 @@ export class GameScene extends THREE.Group {
         this.hasRevived = false;
         this.graceTimer = 1.5; // 1.5 seconds of grace period where player cannot die
         this.milestoneReached = 0;
+
+        // ── Wink: start a new round ──
+        this._winkRound = winkGame.startRound();
+
         this.updateScore();
         this.scoreElement.style.display = 'block';
         this.settingsBtn.style.display = 'flex';
@@ -676,6 +681,20 @@ export class GameScene extends THREE.Group {
     }
 
     showFinalGameOver() {
+        // ── Wink: complete round + submit score ──
+        if (this._winkRound) {
+            winkGame.completeRound(this._winkRound, {
+                metadata: { outcome: 'game_over', score: this.score },
+            });
+            if (winkGame.canSubmitScore) {
+                winkGame.submitFinalScore({
+                    score: this.score,
+                    playTime: Math.round((Date.now() - this._winkRound.startedAtMs) / 1000),
+                    gameMode: 'classic',
+                }).catch(() => {});
+            }
+        }
+
         const overlay = document.createElement('div');
         overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;pointer-events:auto;";
         
