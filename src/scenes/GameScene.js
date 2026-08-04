@@ -836,7 +836,7 @@ export class GameScene extends THREE.Group {
         const svgs = {
             'home': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
             'replay': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M17.65 6.35A7.95 7.95 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>',
-            'ad': '<svg viewBox="0 0 40 26" width="44" height="28"><rect x="0" y="0" width="30" height="26" rx="5" fill="#ffffff" /><polygon points="30,13 39,7 39,19" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" /><text x="15" y="18" font-family="\'Lilita One\', Arial, sans-serif" font-size="16" fill="#E65100" text-anchor="middle">x2</text></svg>'
+            'ad': '<svg viewBox="0 0 54 30" width="46" height="26"><rect x="0" y="0" width="54" height="30" rx="8" fill="#ffffff" /><path d="M12,9 L12,21 L21,15 Z" fill="#E65100" /><text x="36" y="21" font-family="\'Lilita One\', Arial, sans-serif" font-size="18" fill="#E65100" text-anchor="middle">x2</text></svg>'
         };
 
         const homeBtn = createNavBtn(svgs['home'], () => {
