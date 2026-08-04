@@ -255,7 +255,7 @@ export class GameScene extends THREE.Group {
             }
         }
         // 300+ case (every 50 points)
-        else if (score >= 300 && score % 50 === 0) {
+        if (!targetMilestone && score >= 300 && score % 50 === 0) {
             targetMilestone = { score: score, msg: "Unstoppable!", emoji: "⚡" };
         }
 
