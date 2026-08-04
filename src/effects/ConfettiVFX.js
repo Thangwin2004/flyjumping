@@ -21,6 +21,7 @@ export class ConfettiVFX extends THREE.Group {
         this.position.copy(position);
         this.isPlaying = true;
         this.lifetime = 0;
+        this.maxLifetime = 3.5; // Longer celebration for more epic feel
 
         const confettiColors = [
             0xFF4081, // Pink
@@ -35,54 +36,58 @@ export class ConfettiVFX extends THREE.Group {
             0xE91E63, // Deep pink
         ];
 
-        const particleCount = Math.floor(35 * intensity);
-
+        // 1. Confetti (Rectangles)
+        const particleCount = Math.floor(150 * intensity); // Huge increase
         for (let i = 0; i < particleCount; i++) {
             const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-
-            // Mix of rectangles and small squares for confetti feel
-            const w = 2 + Math.random() * 4;
-            const h = 4 + Math.random() * 8;
+            const w = 3 + Math.random() * 5;
+            const h = 6 + Math.random() * 10;
             const geom = new THREE.BoxGeometry(w, h, 0.5);
-
-            const mat = new THREE.MeshBasicMaterial({
-                color: color,
-                transparent: true,
-                opacity: 1,
-                side: THREE.DoubleSide
-            });
-
+            const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 1, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geom, mat);
-            mesh.position.set(
-                (Math.random() - 0.5) * 60,
-                Math.random() * 20,
-                (Math.random() - 0.5) * 30
-            );
+            
+            mesh.position.set((Math.random() - 0.5) * 100, Math.random() * 40, (Math.random() - 0.5) * 50);
+            mesh.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
 
-            // Random initial rotation
-            mesh.rotation.set(
-                Math.random() * Math.PI * 2,
-                Math.random() * Math.PI * 2,
-                Math.random() * Math.PI * 2
-            );
-
-            // Explosion velocity - burst outward and upward
             const angle = Math.random() * Math.PI * 2;
-            const upAngle = Math.random() * Math.PI * 0.6;
-            const speed = 60 + Math.random() * 120;
+            const upAngle = Math.random() * Math.PI * 0.7;
+            const speed = 100 + Math.random() * 200; // Faster burst
 
-            mesh.userData.vx = Math.cos(angle) * speed * 0.6;
-            mesh.userData.vy = Math.sin(upAngle) * speed + 80; // Strong upward burst
-            mesh.userData.vz = Math.sin(angle) * speed * 0.3;
-
-            // Tumbling rotation speeds (confetti flutter)
-            mesh.userData.rotSpeedX = (Math.random() - 0.5) * 12;
-            mesh.userData.rotSpeedY = (Math.random() - 0.5) * 8;
-            mesh.userData.rotSpeedZ = (Math.random() - 0.5) * 10;
-
-            // Flutter factor (wind resistance on the flat side)
-            mesh.userData.flutter = 0.3 + Math.random() * 0.5;
+            mesh.userData.vx = Math.cos(angle) * speed * 0.8;
+            mesh.userData.vy = Math.sin(upAngle) * speed + 100; 
+            mesh.userData.vz = Math.sin(angle) * speed * 0.4;
+            mesh.userData.rotSpeedX = (Math.random() - 0.5) * 15;
+            mesh.userData.rotSpeedY = (Math.random() - 0.5) * 10;
+            mesh.userData.rotSpeedZ = (Math.random() - 0.5) * 12;
+            mesh.userData.flutter = 0.4 + Math.random() * 0.6;
             mesh.userData.flutterPhase = Math.random() * Math.PI * 2;
+            mesh.userData.isSparkle = false;
+
+            this.add(mesh);
+            this.particles.push(mesh);
+        }
+
+        // 2. Fireworks/Sparks (Glowing Spheres)
+        const sparkCount = Math.floor(100 * intensity);
+        for (let i = 0; i < sparkCount; i++) {
+            const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+            const geom = new THREE.SphereGeometry(2 + Math.random() * 2, 6, 6);
+            const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 1 });
+            const mesh = new THREE.Mesh(geom, mat);
+            
+            mesh.position.set((Math.random() - 0.5) * 40, Math.random() * 20, (Math.random() - 0.5) * 20);
+
+            const angle = Math.random() * Math.PI * 2;
+            const upAngle = Math.random() * Math.PI * 2; // Spherical burst
+            const speed = 150 + Math.random() * 300; // Very fast burst
+
+            mesh.userData.vx = Math.cos(angle) * Math.cos(upAngle) * speed;
+            mesh.userData.vy = Math.sin(upAngle) * speed + 120; 
+            mesh.userData.vz = Math.sin(angle) * Math.cos(upAngle) * speed;
+            
+            mesh.userData.isSparkle = true;
+            mesh.userData.sparkleLife = 0.6 + Math.random() * 1.0; // Sparks die much faster
+            mesh.userData.sparkleAge = 0;
 
             this.add(mesh);
             this.particles.push(mesh);
@@ -111,38 +116,61 @@ export class ConfettiVFX extends THREE.Group {
         }
 
         for (const p of this.particles) {
-            // Apply gravity (lighter than normal for floaty feel)
-            p.userData.vy -= 120 * dtSec;
+            if (p.userData.isSparkle) {
+                // Sparkle behavior (fireworks)
+                p.userData.sparkleAge += dtSec;
+                p.userData.vy -= 200 * dtSec; // Heavier gravity for sparks
+                
+                // Air resistance is higher
+                p.userData.vx *= 0.96;
+                p.userData.vz *= 0.96;
+                
+                // Fade out quickly
+                const lifeT = p.userData.sparkleAge / p.userData.sparkleLife;
+                if (lifeT >= 1) {
+                    p.material.opacity = 0;
+                } else {
+                    p.material.opacity = 1 - (lifeT * lifeT); // Non-linear fade
+                }
+                
+                // Shrink
+                const scale = Math.max(0, 1 - lifeT);
+                p.scale.set(scale, scale, scale);
 
-            // Flutter effect (confetti wobbles side to side as it falls)
-            p.userData.flutterPhase += dtSec * 6;
-            const flutterForce = Math.sin(p.userData.flutterPhase) * p.userData.flutter * 30;
-            p.userData.vx += flutterForce * dtSec;
+            } else {
+                // Normal confetti behavior
+                p.userData.vy -= 120 * dtSec;
 
-            // Air resistance
-            p.userData.vx *= 0.995;
-            p.userData.vz *= 0.995;
+                // Flutter effect
+                p.userData.flutterPhase += dtSec * 6;
+                const flutterForce = Math.sin(p.userData.flutterPhase) * p.userData.flutter * 30;
+                p.userData.vx += flutterForce * dtSec;
 
-            // Move
+                // Air resistance
+                p.userData.vx *= 0.995;
+                p.userData.vz *= 0.995;
+                
+                // Tumble rotation
+                p.rotation.x += p.userData.rotSpeedX * dtSec;
+                p.rotation.y += p.userData.rotSpeedY * dtSec;
+                p.rotation.z += p.userData.rotSpeedZ * dtSec;
+
+                // Fade out in the last 30%
+                if (t > 0.7) {
+                    p.material.opacity = 1 - ((t - 0.7) / 0.3);
+                }
+
+                // Gentle shrink near end
+                if (t > 0.8) {
+                    const scale = 1 - ((t - 0.8) / 0.2) * 0.5;
+                    p.scale.set(scale, scale, scale);
+                }
+            }
+
+            // Move both types
             p.position.x += p.userData.vx * dtSec;
             p.position.y += p.userData.vy * dtSec;
             p.position.z += p.userData.vz * dtSec;
-
-            // Tumble rotation
-            p.rotation.x += p.userData.rotSpeedX * dtSec;
-            p.rotation.y += p.userData.rotSpeedY * dtSec;
-            p.rotation.z += p.userData.rotSpeedZ * dtSec;
-
-            // Fade out in the last 30%
-            if (t > 0.7) {
-                p.material.opacity = 1 - ((t - 0.7) / 0.3);
-            }
-
-            // Gentle shrink near end
-            if (t > 0.8) {
-                const scale = 1 - ((t - 0.8) / 0.2) * 0.5;
-                p.scale.set(scale, scale, scale);
-            }
         }
     }
 }
