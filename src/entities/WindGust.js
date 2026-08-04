@@ -9,9 +9,9 @@ export class WindGust extends THREE.Group {
     constructor(direction = 1) {
         super();
         this.windDirection = direction; // 1 = push right, -1 = push left
-        this.windForce = 4 + Math.random() * 3;
-        this.windWidth = 80;
-        this.windHeight = 120;
+        this.windForce = 6 + Math.random() * 4; // Stronger force for more tension
+        this.windWidth = 220; // Much wider, harder to dodge
+        this.windHeight = 200; // Taller, covers the jump gap
         this.isDead = false;
         this.time = Math.random() * Math.PI * 2;
 
@@ -23,7 +23,7 @@ export class WindGust extends THREE.Group {
         const zoneMat = new THREE.MeshBasicMaterial({
             color: direction > 0 ? 0x81D4FA : 0xB3E5FC,
             transparent: true,
-            opacity: 0.12,
+            opacity: 0.35, // More visible
             side: THREE.DoubleSide
         });
         const zone = new THREE.Mesh(zoneGeom, zoneMat);
@@ -31,29 +31,29 @@ export class WindGust extends THREE.Group {
 
         // Arrow indicators (3 arrows pointing in wind direction)
         const arrowMat = new THREE.MeshBasicMaterial({
-            color: 0x29B6F6,
+            color: 0x0288D1, // Darker blue for contrast
             transparent: true,
-            opacity: 0.5
+            opacity: 0.9 // Very clear
         });
 
         this.arrows = [];
         for (let i = 0; i < 3; i++) {
             const arrowGroup = new THREE.Group();
 
-            // Arrow shaft
-            const shaftGeom = new THREE.BoxGeometry(16, 3, 2);
+            // Arrow shaft (thicker)
+            const shaftGeom = new THREE.BoxGeometry(24, 6, 2);
             const shaft = new THREE.Mesh(shaftGeom, arrowMat);
             arrowGroup.add(shaft);
 
-            // Arrow head
-            const headGeom = new THREE.ConeGeometry(5, 10, 4);
+            // Arrow head (larger)
+            const headGeom = new THREE.ConeGeometry(8, 14, 4);
             const head = new THREE.Mesh(headGeom, arrowMat);
             head.rotation.z = direction > 0 ? -Math.PI / 2 : Math.PI / 2;
-            head.position.x = direction * 12;
+            head.position.x = direction * 16;
             arrowGroup.add(head);
 
-            arrowGroup.position.y = (i - 1) * 35;
-            arrowGroup.position.x = (i - 1) * direction * 8;
+            arrowGroup.position.y = (i - 1) * 60; // Spread out more vertically
+            arrowGroup.position.x = (i - 1) * direction * 15;
 
             group.add(arrowGroup);
             this.arrows.push(arrowGroup);
@@ -67,12 +67,12 @@ export class WindGust extends THREE.Group {
             opacity: 0.6
         });
 
-        for (let i = 0; i < 8; i++) {
-            const lineGeom = new THREE.BoxGeometry(8 + Math.random() * 15, 1, 1);
+        for (let i = 0; i < 15; i++) {
+            const lineGeom = new THREE.BoxGeometry(15 + Math.random() * 30, 2, 2);
             const line = new THREE.Mesh(lineGeom, lineMat.clone());
             line.position.set(
-                (Math.random() - 0.5) * this.windWidth * 0.8,
-                (Math.random() - 0.5) * this.windHeight * 0.8,
+                (Math.random() - 0.5) * this.windWidth * 0.9,
+                (Math.random() - 0.5) * this.windHeight * 0.9,
                 (Math.random() - 0.5) * 10
             );
             line.userData.baseX = line.position.x;

@@ -273,8 +273,9 @@ export class PlatformManager extends THREE.Group {
         if (this.difficulty > 4 && this.totalPlatformsSpawned > 20 && Math.random() < 0.06 && !spawnedSpecial) {
             const direction = Math.random() > 0.5 ? 1 : -1;
             const wind = new WindGust(direction);
-            wind.position.x = bounds.left + bounds.width / 2 + (Math.random() - 0.5) * 100; // rough center
-            wind.position.y = platform.position.y + gap / 2; // Mid air
+            // Place it exactly over the newly spawned platform's x position to force the player to fight it to land!
+            wind.position.x = platform.position.x; 
+            wind.position.y = platform.position.y - gap / 2; // Below the next platform (in the jump gap)
             this.add(wind);
             this.windGusts.push(wind);
             spawnedSpecial = true;
