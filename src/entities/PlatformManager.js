@@ -231,6 +231,27 @@ export class PlatformManager extends THREE.Group {
         this.platforms.push(platform);
         this.add(platform);
 
+        // --- SAFE ALTERNATIVE FOR SPIKE PLATFORMS ---
+        // If a spike platform spawns, it acts as a soft-lock/guaranteed death because the player CANNOT jump over it.
+        // Therefore, we MUST spawn a safe normal platform adjacent to it at the same Y level to provide a path.
+        if (type === 'spike') {
+            const safePlatform = new Platform('normal');
+            safePlatform.hasBeenLandedOn = false;
+            safePlatform.platformIndex = this.totalPlatformsSpawned++;
+            
+            // Place it sufficiently far from the spike platform (platform width is 100)
+            if (platform.position.x < (minX + maxX) / 2) {
+                // Spike is on the left, put safe on the right
+                safePlatform.position.x = Math.min(maxX, platform.position.x + 180);
+            } else {
+                // Spike is on the right, put safe on the left
+                safePlatform.position.x = Math.max(minX, platform.position.x - 180);
+            }
+            safePlatform.position.y = this.highestY;
+            this.platforms.push(safePlatform);
+            this.add(safePlatform);
+        }
+
         // --- SPATIAL ENTITY SPAWNING ---
         
         // Cannot spawn multiple special items on the same platform easily to avoid clutter
