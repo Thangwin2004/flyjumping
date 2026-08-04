@@ -86,6 +86,7 @@ export class GameScene extends THREE.Group {
         this.hasRevived = false;
         this.graceTimer = 1.5; // 1.5 seconds of grace period where player cannot die
         this.milestoneReached = 0;
+        this._warmupFrames = 3; // Skip first 3 frames to let scene settle
 
         // ── Wink: start a new round ──
         this._winkRound = winkGame.startRound();
@@ -113,6 +114,9 @@ export class GameScene extends THREE.Group {
             gameApp.dirLight.target.position.y = gameApp.camera.position.y;
             gameApp.dirLight.target.updateMatrixWorld();
         }
+        
+        // Reset clock to prevent accumulated dt from causing lag on first frame
+        gameApp.clock.getDelta(); // Flush accumulated time
         
         gameApp.ticker.add(this.tickerFunc);
     }
@@ -145,6 +149,12 @@ export class GameScene extends THREE.Group {
 
     update(ticker) {
         if (this.state !== 'playing' && this.state !== 'exploding') return;
+        
+        // Skip warmup frames to let the scene settle after creation
+        if (this._warmupFrames > 0) {
+            this._warmupFrames--;
+            return;
+        }
         
         const dt = ticker.deltaTime;
         const dtSec = dt / 60;
@@ -924,6 +934,23 @@ export class GameScene extends THREE.Group {
         window.removeEventListener('pointermove', this.pointerMoveHandler);
         window.removeEventListener('pointerup', this.pointerUpHandler);
         gameApp.ticker.remove(this.tickerFunc);
+        
+        // Kill all pending gsap tweens to prevent memory leaks and ghost animations
+        gsap.killTweensOf(this.player.position);
+        gsap.killTweensOf(this.player.scale);
+        gsap.killTweensOf(this.player.rotation);
+        if (this.player.model) gsap.killTweensOf(this.player.model.rotation);
+        if (this.milestoneContainer) gsap.killTweensOf(this.milestoneContainer);
+        
+        // Clean up firework particles
+        if (this.fireworkParticles) {
+            for (const p of this.fireworkParticles) this.remove(p);
+            this.fireworkParticles = [];
+        }
+        if (this.explosionParticles) {
+            for (const p of this.explosionParticles) this.remove(p);
+            this.explosionParticles = [];
+        }
         
         if (this.scoreElement && this.scoreElement.parentNode) {
             this.scoreElement.parentNode.removeChild(this.scoreElement);
