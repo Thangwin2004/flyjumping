@@ -102,11 +102,36 @@ export class Player extends THREE.Group {
 
         this.isRocketing = false;
         this.rocketTimer = 0;
-        this.rocketDuration = 1.5; // seconds of rocket flight
+        this.rocketDuration = 2.0; // seconds of rocket flight (increased for awesome effect)
 
         // Shield visual (bubble aura)
         this.shieldMesh = null;
         this.buildShieldAura();
+        
+        // Speed lines visual
+        this.speedLines = null;
+        this.buildSpeedLines();
+    }
+
+    buildSpeedLines() {
+        this.speedLines = new THREE.Group();
+        this.speedLines.visible = false;
+        
+        const lineGeom = new THREE.CylinderGeometry(0.3, 0.3, 60, 4);
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+        
+        this.lines = [];
+        for (let i = 0; i < 20; i++) {
+            const line = new THREE.Mesh(lineGeom, lineMat);
+            line.position.x = (Math.random() - 0.5) * 100;
+            line.position.z = (Math.random() - 0.5) * 100;
+            line.position.y = (Math.random() - 0.5) * 150;
+            line.userData = { speed: 120 + Math.random() * 60 };
+            
+            this.lines.push(line);
+            this.speedLines.add(line);
+        }
+        this.add(this.speedLines);
     }
 
     buildShieldAura() {
@@ -170,6 +195,7 @@ export class Player extends THREE.Group {
         this.rocketTimer = 0;
 
         if (this.shieldMesh) this.shieldMesh.visible = false;
+        if (this.speedLines) this.speedLines.visible = false;
     }
 
     // ========== BOOSTER ACTIVATIONS ==========
@@ -177,7 +203,16 @@ export class Player extends THREE.Group {
     activateRocket() {
         this.isRocketing = true;
         this.rocketTimer = 0;
-        this.velocity.y = 30; // Strong upward force
+        this.velocity.y = 65; // Strong upward force (super speed)
+        if (this.speedLines) this.speedLines.visible = true;
+        
+        // Add a squash effect to emphasize launch
+        if (this.model && this.baseScale) {
+            gsap.killTweensOf(this.model.scale);
+            this.model.scale.set(this.baseScale * 0.5, this.baseScale * 1.8, this.baseScale * 0.5);
+            gsap.to(this.model.scale, { x: this.baseScale, y: this.baseScale, z: this.baseScale, duration: 0.5, ease: "elastic.out(1, 0.5)" });
+        }
+        
         AudioManager.playBoosterSFX();
     }
 
@@ -257,12 +292,23 @@ export class Player extends THREE.Group {
         // Rocket mode: override gravity, fly upward
         if (this.isRocketing) {
             this.rocketTimer += dtSec;
-            this.velocity.y = 30; // Constant upward thrust
+            this.velocity.y = 65; // Constant high upward thrust
             this.velocity.x *= 0.5; // Reduce horizontal control during rocket
+            
+            // Animate speed lines moving down to simulate high speed upward
+            if (this.speedLines && this.speedLines.visible) {
+                this.lines.forEach(line => {
+                    line.position.y -= line.userData.speed * dtSec * 60;
+                    if (line.position.y < -150) {
+                        line.position.y = 150 + Math.random() * 50;
+                    }
+                });
+            }
 
             if (this.rocketTimer >= this.rocketDuration) {
                 this.isRocketing = false;
                 this.velocity.y = this.jumpForce; // End with a normal jump boost
+                if (this.speedLines) this.speedLines.visible = false;
             }
         }
 
