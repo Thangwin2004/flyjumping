@@ -196,6 +196,7 @@ export class GameScene extends THREE.Group {
         // Update landing VFX and Confetti
         this.landingVFX.update(dtSec);
         this.confettiVFX.update(dtSec);
+        this.updateFireworks(dtSec);
         
         this.checkCollisions();
         this.updateCamera();
@@ -290,23 +291,38 @@ export class GameScene extends THREE.Group {
         });
     }
 
+    getFireworkMaterial(color) {
+        if (!this.fireworkMaterials) this.fireworkMaterials = {};
+        if (!this.fireworkMaterials[color]) {
+            this.fireworkMaterials[color] = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 1
+            });
+        }
+        return this.fireworkMaterials[color];
+    }
+
+    getFireworkGeometry() {
+        if (!this.fireworkGeometry) {
+            this.fireworkGeometry = new THREE.SphereGeometry(1, 4, 4);
+        }
+        return this.fireworkGeometry;
+    }
+
     spawnFireworks() {
-        if (!this.explosionParticles) this.explosionParticles = [];
+        if (!this.fireworkParticles) this.fireworkParticles = [];
         const colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFFFFFF];
         
-        // Spawn 3 bursts of fireworks
+        const geom = this.getFireworkGeometry();
+        
         for (let burst = 0; burst < 3; burst++) {
             const burstX = this.player.position.x + (Math.random() - 0.5) * 200;
             const burstY = this.player.position.y + 100 + Math.random() * 150;
             
             for (let i = 0; i < 40; i++) {
-                const size = 2 + Math.random() * 6;
-                const geom = new THREE.SphereGeometry(size, 4, 4);
-                const mat = new THREE.MeshBasicMaterial({
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    transparent: true,
-                    opacity: 1
-                });
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const mat = this.getFireworkMaterial(color);
                 
                 const particle = new THREE.Mesh(geom, mat);
                 particle.position.set(burstX, burstY, 30 + Math.random() * 50);
@@ -317,12 +333,39 @@ export class GameScene extends THREE.Group {
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
                     vz: (Math.random() - 0.5) * 100,
-                    life: 1.0 + Math.random() * 0.5
+                    life: 1.0 + Math.random() * 0.5,
+                    maxLife: 0,
+                    size: 2 + Math.random() * 6
                 };
+                particle.userData.maxLife = particle.userData.life;
+                particle.scale.set(particle.userData.size, particle.userData.size, particle.userData.size);
                 
                 this.add(particle);
-                this.explosionParticles.push(particle);
+                this.fireworkParticles.push(particle);
             }
+        }
+    }
+
+    updateFireworks(dtSec) {
+        if (!this.fireworkParticles) return;
+        
+        for (let i = this.fireworkParticles.length - 1; i >= 0; i--) {
+            const p = this.fireworkParticles[i];
+            p.userData.life -= dtSec;
+            
+            if (p.userData.life <= 0) {
+                this.remove(p);
+                this.fireworkParticles.splice(i, 1);
+                continue;
+            }
+            
+            p.userData.vy -= 150 * dtSec;
+            p.position.x += p.userData.vx * dtSec;
+            p.position.y += p.userData.vy * dtSec;
+            p.position.z += p.userData.vz * dtSec;
+            
+            const s = (p.userData.life / p.userData.maxLife) * p.userData.size;
+            p.scale.set(s, s, s);
         }
     }
 
@@ -638,16 +681,14 @@ export class GameScene extends THREE.Group {
     spawnExplosion(position) {
         this.explosionParticles = [];
         const colors = [0xFF4444, 0xFF8800, 0xFFCC00, 0xFFFFFF, 0xFF6600];
+        const geom = this.getFireworkGeometry();
         
         for (let i = 0; i < 20; i++) {
-            const size = 3 + Math.random() * 6;
-            const geom = new THREE.SphereGeometry(size, 4, 4);
-            const mat = new THREE.MeshBasicMaterial({
-                color: colors[Math.floor(Math.random() * colors.length)],
-                transparent: true,
-                opacity: 1
-            });
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const mat = this.getFireworkMaterial(color);
             const p = new THREE.Mesh(geom, mat);
+            p.userData.size = 3 + Math.random() * 6;
+            p.scale.set(p.userData.size, p.userData.size, p.userData.size);
             p.position.copy(position);
             
             const angle = Math.random() * Math.PI * 2;
@@ -676,17 +717,14 @@ export class GameScene extends THREE.Group {
             p.position.z += p.userData.vz * dtSec;
             p.rotation.x += p.userData.rotSpeed * dtSec;
             
-            const fade = Math.max(0, 1 - this.explosionTimer / 0.8);
-            p.material.opacity = fade;
-            const s = 1 - this.explosionTimer * 0.5;
-            p.scale.set(Math.max(0.1, s), Math.max(0.1, s), Math.max(0.1, s));
+            const s = Math.max(0.01, 1 - this.explosionTimer * 0.8) * p.userData.size;
+            p.scale.set(s, s, s);
         }
         
         if (this.explosionTimer > 1) {
             for (const p of this.explosionParticles) {
                 this.remove(p);
-                p.geometry.dispose();
-                p.material.dispose();
+                // Do not dispose shared geometry/material
             }
             this.explosionParticles = [];
         }
