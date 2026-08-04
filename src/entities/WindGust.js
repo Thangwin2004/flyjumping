@@ -18,12 +18,12 @@ export class WindGust extends THREE.Group {
         // Build visual
         const group = new THREE.Group();
 
-        // Wind zone area (semi-transparent box)
+        // Wind zone area (transparent box just for collision logic reference, invisible)
         const zoneGeom = new THREE.BoxGeometry(this.windWidth, this.windHeight, 20);
         const zoneMat = new THREE.MeshBasicMaterial({
             color: direction > 0 ? 0x81D4FA : 0xB3E5FC,
             transparent: true,
-            opacity: 0.35, // More visible
+            opacity: 0.0, // Invisible! User doesn't want a rigid box
             side: THREE.DoubleSide
         });
         const zone = new THREE.Mesh(zoneGeom, zoneMat);
@@ -67,8 +67,8 @@ export class WindGust extends THREE.Group {
             opacity: 0.6
         });
 
-        for (let i = 0; i < 15; i++) {
-            const lineGeom = new THREE.BoxGeometry(15 + Math.random() * 30, 2, 2);
+        for (let i = 0; i < 35; i++) { // Increase lines to make wind visible without box
+            const lineGeom = new THREE.BoxGeometry(15 + Math.random() * 40, 2, 2);
             const line = new THREE.Mesh(lineGeom, lineMat.clone());
             line.position.set(
                 (Math.random() - 0.5) * this.windWidth * 0.9,
