@@ -62,11 +62,15 @@ export class Player extends THREE.Group {
                 this.currentAnim = 'jump';
             }
             
-            const hitModel = AssetManager.getModel('hitAnim');
+            const hitModel = AssetManager.getModel('hitAnim'); // hitAnim is Female Dance Pose.fbx
             if (hitModel && hitModel.animations.length > 0) {
                 this.animations.hit = this.mixer.clipAction(hitModel.animations[0]);
                 this.animations.hit.setLoop(THREE.LoopOnce);
                 this.animations.hit.clampWhenFinished = true;
+                
+                // Reuse the dance pose for rocket flight
+                this.animations.rocket = this.mixer.clipAction(hitModel.animations[0]);
+                this.animations.rocket.setLoop(THREE.LoopRepeat);
             }
         }
 
@@ -213,6 +217,15 @@ export class Player extends THREE.Group {
             gsap.to(this.model.scale, { x: this.baseScale, y: this.baseScale, z: this.baseScale, duration: 0.5, ease: "elastic.out(1, 0.5)" });
         }
         
+        // Play dance animation
+        if (this.mixer && this.animations.rocket) {
+            if (this.animations.jump) this.animations.jump.stop();
+            if (this.animations.hit) this.animations.hit.stop();
+            this.animations.rocket.reset();
+            this.animations.rocket.play();
+            this.currentAnim = 'rocket';
+        }
+        
         AudioManager.playBoosterSFX();
     }
 
@@ -309,6 +322,14 @@ export class Player extends THREE.Group {
                 this.isRocketing = false;
                 this.velocity.y = this.jumpForce; // End with a normal jump boost
                 if (this.speedLines) this.speedLines.visible = false;
+                
+                // Return to jump animation
+                if (this.mixer && this.animations.jump) {
+                    if (this.animations.rocket) this.animations.rocket.stop();
+                    this.animations.jump.reset();
+                    this.animations.jump.play();
+                    this.currentAnim = 'jump';
+                }
             }
         }
 
