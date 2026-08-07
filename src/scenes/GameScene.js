@@ -1048,6 +1048,12 @@ export class GameScene extends THREE.Group {
     }
 
     showFinalGameOver() {
+        // Save personal best high score
+        const currentBest = parseInt(localStorage.getItem('peanutJumpHighScore') || '0', 10);
+        if (this.score > currentBest) {
+            localStorage.setItem('peanutJumpHighScore', this.score.toString());
+        }
+
         // ── Wink: complete round + submit score ──
         if (this._winkRound) {
             winkGame.completeRound(this._winkRound, {
