@@ -84,12 +84,20 @@ export class WindGust extends THREE.Group {
 
         this.add(group);
         this.visual = group;
+
+        // Wind cycle parameters (Blow for 1.8s, Rest/Pause for 1.5s)
+        this.cycleTimer = Math.random() * 3.3; 
+        this.blowDuration = 1.8;
+        this.restDuration = 1.5;
+        this.totalCycle = this.blowDuration + this.restDuration;
+        this.isBlowing = true;
     }
 
     /**
      * Check if player is inside the wind zone
      */
     isPlayerInside(playerX, playerY) {
+        if (!this.isBlowing) return false; // Wind is currently resting/paused
         const dx = Math.abs(playerX - this.position.x);
         const dy = Math.abs(playerY - this.position.y);
         return dx < this.windWidth / 2 && dy < this.windHeight / 2;
@@ -99,41 +107,52 @@ export class WindGust extends THREE.Group {
      * Get the wind push force to apply to player
      */
     getWindPush() {
+        if (!this.isBlowing) return 0;
         return this.windDirection * this.windForce;
     }
 
     update(dt) {
         if (this.isDead) return;
 
+        const dtSec = dt * 0.01666;
+        this.cycleTimer += dtSec;
+        const currentCycleTime = this.cycleTimer % this.totalCycle;
+        this.isBlowing = currentCycleTime < this.blowDuration;
+
         this.time += dt * 0.04;
 
-        // Animate arrows (pulse opacity)
+        // Animate arrows (pulse opacity when blowing, fade out when resting)
         for (let i = 0; i < this.arrows.length; i++) {
             const arrow = this.arrows[i];
             const phase = this.time + i * 0.8;
-            const alpha = 0.3 + Math.sin(phase * 2) * 0.25;
+            const targetAlpha = this.isBlowing ? (0.4 + Math.sin(phase * 3) * 0.35) : 0.08;
             arrow.traverse(child => {
                 if (child.material) {
-                    child.material.opacity = alpha;
+                    child.material.opacity = targetAlpha;
                 }
             });
         }
 
-        // Animate wind lines (move in wind direction)
+        // Animate wind lines (move in wind direction when blowing, stop/fade when resting)
         for (const line of this.windLines) {
-            line.position.x += this.windDirection * line.userData.speed * dt * 0.016;
+            if (this.isBlowing) {
+                line.position.x += this.windDirection * line.userData.speed * dt * 0.016;
 
-            // Wrap around
-            const halfW = this.windWidth / 2;
-            if (this.windDirection > 0 && line.position.x > halfW) {
-                line.position.x = -halfW;
-            } else if (this.windDirection < 0 && line.position.x < -halfW) {
-                line.position.x = halfW;
+                // Wrap around
+                const halfW = this.windWidth / 2;
+                if (this.windDirection > 0 && line.position.x > halfW) {
+                    line.position.x = -halfW;
+                } else if (this.windDirection < 0 && line.position.x < -halfW) {
+                    line.position.x = halfW;
+                }
+
+                // Fade based on position
+                const t = (line.position.x + halfW) / (halfW * 2);
+                line.material.opacity = 0.3 + Math.sin(t * Math.PI) * 0.4;
+            } else {
+                // Fade out when wind rests
+                line.material.opacity = Math.max(0, line.material.opacity - dtSec * 2);
             }
-
-            // Fade based on position
-            const t = (line.position.x + halfW) / (halfW * 2);
-            line.material.opacity = 0.3 + Math.sin(t * Math.PI) * 0.4;
         }
     }
 }
