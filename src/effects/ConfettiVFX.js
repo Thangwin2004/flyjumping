@@ -48,8 +48,8 @@ export class ConfettiVFX extends THREE.Group {
             0xE91E63, // Deep pink
         ];
 
-        // 1. Confetti (Rectangles)
-        const particleCount = Math.floor(40 * intensity); // Reduced for better performance & less clutter
+        // 1. Confetti (Rectangles) - Small, clean count for high performance
+        const particleCount = Math.floor(12 * intensity);
         for (let i = 0; i < particleCount; i++) {
             const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
             const w = 4 + Math.random() * 6;

@@ -332,37 +332,38 @@ export class GameScene extends THREE.Group {
 
     spawnFireworks() {
         if (!this.fireworkParticles) this.fireworkParticles = [];
-        const colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFFFFFF];
+        const colors = [0xFF1744, 0x00E676, 0x2979FF, 0xFFEA00, 0xFF00E5, 0x00E5FF, 0xFFFFFF];
         
         const geom = this.getFireworkGeometry();
         
-        for (let burst = 0; burst < 1; burst++) {
-            const burstX = this.player.position.x;
-            const burstY = this.player.position.y + 150;
+        // Spawn EXACTLY at the center of the screen
+        const burstX = gameApp.GAME_WIDTH / 2;
+        const burstY = gameApp.camera.position.y;
+        
+        const particleCount = 16; // Clean, high-performance particle count
+        for (let i = 0; i < particleCount; i++) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const mat = this.getFireworkMaterial(color);
             
-            for (let i = 0; i < 15; i++) {
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const mat = this.getFireworkMaterial(color);
-                
-                const particle = new THREE.Mesh(geom, mat);
-                particle.position.set(burstX, burstY, 30 + Math.random() * 50);
-                
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 600 + Math.random() * 600; // explode very wide
-                particle.userData = {
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    vz: (Math.random() - 0.5) * 150,
-                    life: 1.5 + Math.random() * 0.5,
-                    maxLife: 0,
-                    size: 3 + Math.random() * 6
-                };
-                particle.userData.maxLife = particle.userData.life;
-                particle.scale.set(particle.userData.size, particle.userData.size, particle.userData.size);
-                
-                this.add(particle);
-                this.fireworkParticles.push(particle);
-            }
+            const particle = new THREE.Mesh(geom, mat);
+            particle.position.set(burstX, burstY, 40);
+            
+            // Even 360-degree radial expansion outwards from center
+            const angle = (i / particleCount) * Math.PI * 2 + (Math.random() * 0.2 - 0.1);
+            const speed = 500 + Math.random() * 300; 
+            particle.userData = {
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                vz: (Math.random() - 0.5) * 80,
+                life: 1.2 + Math.random() * 0.4,
+                maxLife: 0,
+                size: 5 + Math.random() * 5
+            };
+            particle.userData.maxLife = particle.userData.life;
+            particle.scale.set(particle.userData.size, particle.userData.size, particle.userData.size);
+            
+            this.add(particle);
+            this.fireworkParticles.push(particle);
         }
     }
 
