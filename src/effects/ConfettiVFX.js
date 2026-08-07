@@ -10,7 +10,19 @@ export class ConfettiVFX extends THREE.Group {
         this.particles = [];
         this.isPlaying = false;
         this.lifetime = 0;
-        this.maxLifetime = 2.5; // seconds - longer than landing VFX for celebration feel
+        this.maxLifetime = 2.5; 
+        
+        // Cache geometry and materials for performance
+        this.confettiGeom = new THREE.BoxGeometry(1, 1, 0.5);
+        this.materials = {};
+    }
+
+    getMaterial(color) {
+        if (!this.materials[color]) {
+            this.materials[color] = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 1, side: THREE.DoubleSide });
+        }
+        this.materials[color].opacity = 1; // reset opacity if reused
+        return this.materials[color];
     }
 
     /**
@@ -37,21 +49,22 @@ export class ConfettiVFX extends THREE.Group {
         ];
 
         // 1. Confetti (Rectangles)
-        const particleCount = Math.floor(150 * intensity); // Huge increase
+        const particleCount = Math.floor(40 * intensity); // Reduced for better performance & less clutter
         for (let i = 0; i < particleCount; i++) {
             const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-            const w = 3 + Math.random() * 5;
-            const h = 6 + Math.random() * 10;
-            const geom = new THREE.BoxGeometry(w, h, 0.5);
-            const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 1, side: THREE.DoubleSide });
-            const mesh = new THREE.Mesh(geom, mat);
+            const w = 4 + Math.random() * 6;
+            const h = 8 + Math.random() * 12;
+            
+            const mat = this.getMaterial(color);
+            const mesh = new THREE.Mesh(this.confettiGeom, mat);
+            mesh.scale.set(w, h, 1);
             
             mesh.position.set((Math.random() - 0.5) * 100, Math.random() * 40, (Math.random() - 0.5) * 50);
             mesh.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
 
             const angle = Math.random() * Math.PI * 2;
             const upAngle = Math.random() * Math.PI * 0.7;
-            const speed = 100 + Math.random() * 200; // Faster burst
+            const speed = 100 + Math.random() * 200; 
 
             mesh.userData.vx = Math.cos(angle) * speed * 0.8;
             mesh.userData.vy = Math.sin(upAngle) * speed + 100; 
@@ -62,32 +75,8 @@ export class ConfettiVFX extends THREE.Group {
             mesh.userData.flutter = 0.4 + Math.random() * 0.6;
             mesh.userData.flutterPhase = Math.random() * Math.PI * 2;
             mesh.userData.isSparkle = false;
-
-            this.add(mesh);
-            this.particles.push(mesh);
-        }
-
-        // 2. Fireworks/Sparks (Glowing Spheres)
-        const sparkCount = Math.floor(100 * intensity);
-        for (let i = 0; i < sparkCount; i++) {
-            const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-            const geom = new THREE.SphereGeometry(2 + Math.random() * 2, 6, 6);
-            const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 1 });
-            const mesh = new THREE.Mesh(geom, mat);
-            
-            mesh.position.set((Math.random() - 0.5) * 40, Math.random() * 20, (Math.random() - 0.5) * 20);
-
-            const angle = Math.random() * Math.PI * 2;
-            const upAngle = Math.random() * Math.PI * 2; // Spherical burst
-            const speed = 150 + Math.random() * 300; // Very fast burst
-
-            mesh.userData.vx = Math.cos(angle) * Math.cos(upAngle) * speed;
-            mesh.userData.vy = Math.sin(upAngle) * speed + 120; 
-            mesh.userData.vz = Math.sin(angle) * Math.cos(upAngle) * speed;
-            
-            mesh.userData.isSparkle = true;
-            mesh.userData.sparkleLife = 0.6 + Math.random() * 1.0; // Sparks die much faster
-            mesh.userData.sparkleAge = 0;
+            mesh.userData.baseW = w;
+            mesh.userData.baseH = h;
 
             this.add(mesh);
             this.particles.push(mesh);
@@ -96,8 +85,8 @@ export class ConfettiVFX extends THREE.Group {
 
     clear() {
         for (const p of this.particles) {
-            p.geometry.dispose();
-            p.material.dispose();
+            // Do not dispose cached geometry or materials
+
             this.remove(p);
         }
         this.particles = [];
@@ -163,7 +152,7 @@ export class ConfettiVFX extends THREE.Group {
                 // Gentle shrink near end
                 if (t > 0.8) {
                     const scale = 1 - ((t - 0.8) / 0.2) * 0.5;
-                    p.scale.set(scale, scale, scale);
+                    p.scale.set(p.userData.baseW * scale, p.userData.baseH * scale, scale);
                 }
             }
 
