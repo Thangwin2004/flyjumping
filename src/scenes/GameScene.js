@@ -285,29 +285,33 @@ export class GameScene extends THREE.Group {
         
         AudioManager.playMilestoneSFX();
 
-        // Slow motion effect
-        this.timeScale = 0.15; // Slow down game to 15% speed
+        // Slow motion effect - if rocketing, apply ultra slow-motion so milestone can be fully enjoyed
+        const isRocketing = this.player && this.player.isRocketing;
+        const targetSlowMo = isRocketing ? 0.05 : 0.15;
+        const slowMoDuration = isRocketing ? 2.2 : 1.5;
+
+        this.timeScale = targetSlowMo;
         gsap.killTweensOf(this, "timeScale");
-        gsap.to(this, { timeScale: 1.0, duration: 1.5, ease: "power2.in" });
+        gsap.to(this, { timeScale: 1.0, duration: slowMoDuration, ease: "power2.inOut" });
         
         // Confetti at center of screen
         const centerPos = new THREE.Vector3(gameApp.GAME_WIDTH / 2, gameApp.camera.position.y, 0);
-        this.confettiVFX.play(centerPos, 1.5);
+        this.confettiVFX.play(centerPos, 0.4);
         
         // Animate popup
         gsap.killTweensOf(this.milestoneContainer);
         gsap.fromTo(this.milestoneContainer, 
             { scale: 0, opacity: 0, rotation: -10 },
-            { scale: 1.1, opacity: 1, rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" }
+            { scale: 1.15, opacity: 1, rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" }
         );
         // Add a gentle floating effect
         gsap.to(this.milestoneContainer, {
             y: "-=20", duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: 1
         });
         
-        // Hide after 2 seconds
+        // Hide after milestone display
         gsap.to(this.milestoneContainer, {
-            scale: 0, opacity: 0, duration: 0.3, delay: 2.5, ease: "back.in(2)"
+            scale: 0, opacity: 0, duration: 0.3, delay: slowMoDuration + 0.5, ease: "back.in(2)"
         });
     }
 

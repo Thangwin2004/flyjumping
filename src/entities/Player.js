@@ -305,7 +305,11 @@ export class Player extends THREE.Group {
         // Rocket mode: override gravity, fly upward
         if (this.isRocketing) {
             this.rocketTimer += dtSec;
-            this.velocity.y = 65; // Constant high upward thrust
+            
+            // Adjust rocket thrust dynamically if slow-motion is active
+            const currentSlowMo = (this.parent && this.parent.timeScale) ? this.parent.timeScale : 1.0;
+            const thrust = currentSlowMo < 0.2 ? 22 : (currentSlowMo < 0.6 ? 40 : 65);
+            this.velocity.y = thrust;
             this.velocity.x *= 0.5; // Reduce horizontal control during rocket
             
             // Animate speed lines moving down to simulate high speed upward
