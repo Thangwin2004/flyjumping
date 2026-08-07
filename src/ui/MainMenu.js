@@ -23,30 +23,72 @@ export class MainMenu {
         UIBuilder.clearUI();
         this.container.innerHTML = ''; // clear
 
-        // Title - Vibrant 3D Cartoon Bubble Style
-        const title = document.createElement('h1');
-        title.innerHTML = "RỒNG BÉO<br>TẬP BAY";
-        title.style.cssText = `
-            font-family: 'Lilita One', 'Inter', cursive, sans-serif;
-            font-size: clamp(48px, 12vw, 68px);
-            font-weight: 900;
-            text-align: center;
-            background: linear-gradient(to bottom, #FFFFFF 15%, #FFF176 45%, #FF9800 80%, #E65100 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 2px 0px #FFFFFF) 
-                    drop-shadow(0px -2px 0px #FFFFFF) 
-                    drop-shadow(2px 0px 0px #FFFFFF) 
-                    drop-shadow(-2px 0px 0px #FFFFFF) 
-                    drop-shadow(0px 7px 0px #BF360C) 
-                    drop-shadow(0px 10px 16px rgba(0,0,0,0.45));
-            margin-top: -30px;
-            margin-bottom: 45px;
-            line-height: 1.1;
-            letter-spacing: 3px;
-            transform: rotate(-2deg);
+        // Title - Vibrant 3D Cartoon Bubble SVG Style (Guarantees no accent clipping & rich gold/orange gradient)
+        const titleContainer = document.createElement('div');
+        titleContainer.style.cssText = `
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: -20px;
+            margin-bottom: 30px;
+            pointer-events: none;
+            user-select: none;
         `;
-        this.container.appendChild(title);
+
+        titleContainer.innerHTML = `
+            <svg viewBox="0 0 450 170" style="width: 88%; max-width: 440px; filter: drop-shadow(0px 10px 18px rgba(0,0,0,0.4)); transform: rotate(-2deg); overflow: visible;">
+                <defs>
+                    <!-- Vibrant Gold to Orange Gradient for Line 1 "RỒNG BÉO" -->
+                    <linearGradient id="titleGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#FFF9C4" />
+                        <stop offset="30%" stop-color="#FDD835" />
+                        <stop offset="70%" stop-color="#FB8C00" />
+                        <stop offset="100%" stop-color="#E65100" />
+                    </linearGradient>
+                    <!-- Rich Bright Orange Gradient for Line 2 "TẬP BAY" -->
+                    <linearGradient id="titleGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#FFE082" />
+                        <stop offset="30%" stop-color="#FF9800" />
+                        <stop offset="75%" stop-color="#F4511E" />
+                        <stop offset="100%" stop-color="#BF360C" />
+                    </linearGradient>
+                </defs>
+                <style>
+                    .title-text {
+                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-weight: 900;
+                        text-anchor: middle;
+                        font-style: italic;
+                    }
+                    .title-stroke {
+                        stroke: #FFFFFF;
+                        stroke-width: 14px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                        paint-order: stroke fill;
+                    }
+                    .title-3d {
+                        fill: #8D1400;
+                        stroke: #8D1400;
+                        stroke-width: 14px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                    }
+                </style>
+                <!-- 3D Shadow layer (Offset down) -->
+                <g transform="translate(0, 9)">
+                    <text x="225" y="65" font-size="52" class="title-text title-3d">RỒNG BÉO</text>
+                    <text x="225" y="135" font-size="56" class="title-text title-3d">TẬP BAY</text>
+                </g>
+                <!-- Main Foreground Text with White Border & Gradient Fill -->
+                <g>
+                    <text x="225" y="65" font-size="52" fill="url(#titleGrad1)" class="title-text title-stroke">RỒNG BÉO</text>
+                    <text x="225" y="135" font-size="56" fill="url(#titleGrad2)" class="title-text title-stroke">TẬP BAY</text>
+                </g>
+            </svg>
+        `;
+        this.container.appendChild(titleContainer);
 
         const createNavBtn = (iconSvg, size, onClick, colorTop, colorBot, colorShadow) => {
             const btn = document.createElement("button");

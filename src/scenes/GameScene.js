@@ -44,7 +44,7 @@ export class GameScene extends THREE.Group {
         this.milestoneEmoji.style.cssText = "font-size:90px;line-height:1;margin-bottom:5px;filter:drop-shadow(0 10px 15px rgba(0,0,0,0.4));";
         
         this.milestoneText = document.createElement('div');
-        this.milestoneText.style.cssText = "font-family:'Lilita One', cursive;font-size:54px;background:linear-gradient(to bottom, #FFFFFF 20%, #FFEB3B 50%, #FF9800 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0px 5px 0px #E65100) drop-shadow(0px 8px 10px rgba(0,0,0,0.5));letter-spacing:3px;text-align:center;white-space:nowrap;transform:rotate(-3deg);font-weight:900;";
+        this.milestoneText.style.cssText = "display:flex;justify-content:center;align-items:center;width:100%;pointer-events:none;user-select:none;";
         
         this.milestoneContainer.appendChild(this.milestoneEmoji);
         this.milestoneContainer.appendChild(this.milestoneText);
@@ -292,8 +292,47 @@ export class GameScene extends THREE.Group {
     }
 
     showMilestone(msg, emoji) {
-        this.milestoneText.innerText = msg;
         this.milestoneEmoji.innerText = emoji;
+        this.milestoneText.innerHTML = `
+            <svg viewBox="0 0 420 80" style="width: 100%; max-width: 400px; filter: drop-shadow(0px 8px 15px rgba(0,0,0,0.45)); transform: rotate(-3deg); overflow: visible;">
+                <defs>
+                    <linearGradient id="msGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#FFF9C4" />
+                        <stop offset="35%" stop-color="#FDD835" />
+                        <stop offset="75%" stop-color="#FB8C00" />
+                        <stop offset="100%" stop-color="#E65100" />
+                    </linearGradient>
+                </defs>
+                <style>
+                    .ms-text {
+                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-weight: 900;
+                        text-anchor: middle;
+                        font-style: italic;
+                    }
+                    .ms-stroke {
+                        stroke: #FFFFFF;
+                        stroke-width: 12px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                        paint-order: stroke fill;
+                    }
+                    .ms-3d {
+                        fill: #8D1400;
+                        stroke: #8D1400;
+                        stroke-width: 12px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                    }
+                </style>
+                <g transform="translate(0, 7)">
+                    <text x="210" y="55" font-size="42" class="ms-text ms-3d">${msg}</text>
+                </g>
+                <g>
+                    <text x="210" y="55" font-size="42" fill="url(#msGrad)" class="ms-text ms-stroke">${msg}</text>
+                </g>
+            </svg>
+        `;
         
         AudioManager.playMilestoneSFX();
 
@@ -461,9 +500,8 @@ export class GameScene extends THREE.Group {
                         AudioManager.playExplosionSFX();
                         this.triggerCameraShake(6);
                     } else if (!this.player.isRocketing) {
-                        // Die
-                        AudioManager.playExplosionSFX();
-                        this.triggerDeathSequence(enemy.position);
+                        // Die from Bomb / Enemy
+                        this.triggerDeathSequence(enemy.position, 'bomb');
                         enemy.isDead = true;
                         enemy.visible = false;
                         return;
@@ -486,8 +524,7 @@ export class GameScene extends THREE.Group {
                         AudioManager.playExplosionSFX();
                         this.triggerCameraShake(6);
                     } else if (!this.player.isRocketing) {
-                        AudioManager.playSawBladeHitSFX();
-                        this.triggerDeathSequence(saw.position);
+                        this.triggerDeathSequence(saw.position, 'saw');
                         return;
                     }
                 }
@@ -533,8 +570,7 @@ export class GameScene extends THREE.Group {
                             this.triggerCameraShake(5);
                             this.player.jump();
                         } else {
-                            AudioManager.playSpikeSFX();
-                            this.triggerDeathSequence(p.position);
+                            this.triggerDeathSequence(p.position, 'spike');
                             return;
                         }
                     } else {
@@ -584,110 +620,230 @@ export class GameScene extends THREE.Group {
         }
     }
 
-    triggerDeathSequence(impactPos) {
+    triggerDeathSequence(impactPos, type = 'bomb') {
         if (this.graceTimer > 0) return; // Cannot die in grace period
 
-        AudioManager.playExplosionSFX();
         this.state = 'exploding'; // Prevent further updates
         
-        // Strong camera shake
-        this.triggerCameraShake(12);
-        
-        // Spawn explosion particles
+        // Spawn explosion particles at impact point
         this.spawnExplosion(impactPos.clone());
         
-        // Play hit animation
+        // Play hit pose animation
         this.player.playHitAnim();
         
-        // Animate player flying toward camera then slamming into screen
         const camY = gameApp.camera.position.y;
         const camX = gameApp.camera.position.x;
-        
-        // Account for the model's pivot being at the feet. When scaled to 7x, 
-        // the body is way above the center. Shift the target Y down so the body is centered.
         const targetY = camY - 150; 
         
         const tl = gsap.timeline();
-        
-        // Phase 1: Knocked back by explosion (0.2s)
-        tl.to(this.player.position, {
-            y: this.player.position.y + 60,
-            z: this.player.position.z - 30,
-            duration: 0.2,
-            ease: "power2.out"
-        }, 0);
-        tl.to(this.player.rotation, {
-            x: -0.3,
-            duration: 0.2,
-            ease: "power2.out"
-        }, 0);
-        
-        // Phase 2: Fly straight toward camera with pose (0.5s)
-        tl.to(this.player.position, {
-            x: camX,
-            y: targetY,
-            z: 400,
-            duration: 0.5,
-            ease: "power3.in"
-        });
-        tl.to(this.player.scale, {
-            x: 2.5, y: 2.5, z: 2.5,
-            duration: 0.5,
-            ease: "power3.in"
-        }, "<");
-        tl.to(this.player.rotation, {
-            x: 0.15,
-            duration: 0.5,
-            ease: "power2.inOut"
-        }, "<");
-        
-        // Reset model rotation if it was tilted by velocity
-        if (this.player.model) {
-            tl.to(this.player.model.rotation, {
-                z: 0,
+
+        if (type === 'spike') {
+            // ── 1. ĐỤNG GAI: Bay cao lên như nhảy phản xạ rồi rơi xuống ──
+            AudioManager.playSpikeSFX();
+            this.triggerCameraShake(8);
+            
+            const bounceHeight = 280;
+            const targetBounceY = this.player.position.y + bounceHeight;
+            const targetFallY = camY - gameApp.screenBounds.height * 0.8;
+            
+            // Phase 1: High reflex bounce upward (0.45s)
+            tl.to(this.player.position, {
+                y: targetBounceY,
+                duration: 0.45,
+                ease: "power2.out"
+            }, 0);
+            tl.to(this.player.rotation, {
+                z: -0.5,
+                x: 0.2,
+                duration: 0.45,
+                ease: "power2.out"
+            }, 0);
+            
+            // Phase 2: Tumble and fall down past screen (0.75s)
+            tl.to(this.player.position, {
+                y: targetFallY,
+                duration: 0.75,
+                ease: "power2.in"
+            });
+            tl.to(this.player.rotation, {
+                z: -Math.PI * 2,
+                x: Math.PI * 0.5,
+                duration: 0.75,
+                ease: "power1.in"
+            }, "<");
+            
+            // Phase 3: Game Over when fallen off-screen
+            tl.to({}, {
+                duration: 0.1,
+                onComplete: () => {
+                    this.player.visible = false;
+                    this.player.scale.set(1, 1, 1);
+                    this.player.rotation.set(0, 0, 0);
+                    this.player.position.z = 30;
+                    this.handleGameOver();
+                }
+            });
+
+        } else if (type === 'saw') {
+            // ── 2. ĐỤNG CƯA: Xoay xoay liên tục rồi bay thẳng ra màn hình ──
+            AudioManager.playSawBladeHitSFX();
+            this.triggerCameraShake(16);
+            
+            // Phase 1: Spin violently (xoay xoay) in 3D (0.45s)
+            tl.to(this.player.rotation, {
+                z: Math.PI * 4,
+                y: Math.PI * 2,
+                x: Math.PI,
+                duration: 0.45,
+                ease: "none"
+            }, 0);
+            tl.to(this.player.position, {
+                y: this.player.position.y + 50,
+                z: this.player.position.z + 80,
+                duration: 0.45,
+                ease: "power2.out"
+            }, 0);
+            tl.to(this.player.scale, {
+                x: 1.8, y: 1.8, z: 1.8,
+                duration: 0.45,
+                ease: "power2.out"
+            }, 0);
+            
+            // Phase 2: Straighten and fly straight into screen (0.4s)
+            tl.to(this.player.rotation, {
+                x: 0.15, y: 0, z: 0,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+            tl.to(this.player.position, {
+                x: camX,
+                y: targetY,
+                z: 400,
+                duration: 0.4,
+                ease: "power3.in"
+            }, "<");
+            tl.to(this.player.scale, {
+                x: 2.5, y: 2.5, z: 2.5,
+                duration: 0.4,
+                ease: "power3.in"
+            }, "<");
+            
+            if (this.player.model) {
+                tl.to(this.player.model.rotation, { z: 0, duration: 0.2 }, "<");
+            }
+            
+            // Phase 3: Slam into screen (0.1s)
+            tl.to(this.player.scale, {
+                x: 3.5, y: 3.5, z: 0.2,
+                duration: 0.1,
+                ease: "power4.out"
+            });
+            tl.to(this.player.position, {
+                z: 500,
+                duration: 0.1,
+                ease: "power4.out",
+                onStart: () => {
+                    this.triggerCameraShake(20);
+                }
+            }, "<");
+            tl.to(this.player.rotation, {
+                x: 0,
+                duration: 0.1,
+                ease: "power4.out"
+            }, "<");
+            
+            // Phase 4: Hold 0.5s then Game Over
+            tl.to({}, {
                 duration: 0.5,
+                onComplete: () => {
+                    this.player.visible = false;
+                    this.player.scale.set(1, 1, 1);
+                    this.player.rotation.set(0, 0, 0);
+                    this.player.position.z = 30;
+                    this.handleGameOver();
+                }
+            });
+
+        } else {
+            // ── 3. ĐỤNG BOM / ENEMY: Bay thẳng ra màn hình ──
+            AudioManager.playExplosionSFX();
+            this.triggerCameraShake(14);
+            
+            // Phase 1: Knocked back slightly (0.15s)
+            tl.to(this.player.position, {
+                y: this.player.position.y + 40,
+                z: this.player.position.z - 20,
+                duration: 0.15,
+                ease: "power2.out"
+            }, 0);
+            tl.to(this.player.rotation, {
+                x: -0.3,
+                duration: 0.15,
+                ease: "power2.out"
+            }, 0);
+            
+            // Phase 2: Fly straight toward camera/screen (0.45s)
+            tl.to(this.player.position, {
+                x: camX,
+                y: targetY,
+                z: 400,
+                duration: 0.45,
+                ease: "power3.in"
+            });
+            tl.to(this.player.scale, {
+                x: 2.5, y: 2.5, z: 2.5,
+                duration: 0.45,
+                ease: "power3.in"
+            }, "<");
+            tl.to(this.player.rotation, {
+                x: 0.15,
+                duration: 0.45,
                 ease: "power2.inOut"
             }, "<");
+            
+            if (this.player.model) {
+                tl.to(this.player.model.rotation, { z: 0, duration: 0.45 }, "<");
+            }
+            
+            // Phase 3: Slam into screen (0.1s)
+            tl.to(this.player.scale, {
+                x: 3.5, y: 3.5, z: 0.2,
+                duration: 0.1,
+                ease: "power4.out"
+            });
+            tl.to(this.player.position, {
+                z: 500,
+                duration: 0.1,
+                ease: "power4.out",
+                onStart: () => {
+                    this.triggerCameraShake(20);
+                }
+            }, "<");
+            tl.to(this.player.rotation, {
+                x: 0,
+                duration: 0.1,
+                ease: "power4.out"
+            }, "<");
+            
+            // Phase 4: Hold 0.5s then Game Over
+            tl.to({}, {
+                duration: 0.5,
+                onComplete: () => {
+                    this.player.visible = false;
+                    this.player.scale.set(1, 1, 1);
+                    this.player.rotation.set(0, 0, 0);
+                    this.player.position.z = 30;
+                    this.handleGameOver();
+                }
+            });
         }
-        
-        // Phase 3: SLAM into screen (0.1s)
-        tl.to(this.player.scale, {
-            x: 3.5, y: 3.5, z: 0.2,
-            duration: 0.1,
-            ease: "power4.out"
-        });
-        tl.to(this.player.position, {
-            z: 500,
-            duration: 0.1,
-            ease: "power4.out",
-            onStart: () => {
-                this.triggerCameraShake(20);
-            }
-        }, "<");
-        tl.to(this.player.rotation, {
-            x: 0,
-            duration: 0.1,
-            ease: "power4.out"
-        }, "<");
-        
-        // Phase 4: Stick to screen (0.6s) then game over
-        tl.to({}, {
-            duration: 0.6,
-            onComplete: () => {
-                this.player.visible = false;
-                this.player.scale.set(1, 1, 1);
-                this.player.rotation.set(0, 0, 0);
-                this.player.position.z = 30;
-                this.handleGameOver();
-            }
-        });
     }
 
     updateCamera() {
         // Freeze camera movement during explosion so player can center perfectly
         if (this.state !== 'exploding') {
-            // We want camera to move UP when player goes UP.
-            const targetY = this.player.position.y + gameApp.screenBounds.height * 0.1; 
+            // Keep player exactly in the vertical center (50% screen height) when flying/ascending
+            const targetY = this.player.position.y; 
             
             if (targetY > gameApp.camera.position.y) {
                 gameApp.camera.position.y = targetY;
@@ -726,19 +882,19 @@ export class GameScene extends THREE.Group {
         
         if (this.player.isRocketing) {
             const rem = Math.max(0, 2.0 - (this.player.rocketTimer || 0));
-            activeList.push({ icon: '🚀', name: 'Tên lửa', rem: rem, total: 2.0, color: 'linear-gradient(to right, #FF5252, #FF793F)' });
+            activeList.push({ icon: '🚀', rem: rem, total: 2.0, color: 'linear-gradient(to right, #FF5252, #FF793F)' });
         }
         if (this.player.hasShield) {
             const rem = Math.max(0, (this.player.shieldDuration || 10.0) - (this.player.shieldTimer || 0));
-            activeList.push({ icon: '🛡️', name: 'Khiên', rem: rem, total: this.player.shieldDuration || 10.0, color: 'linear-gradient(to right, #4FC3F7, #0288D1)' });
+            activeList.push({ icon: '🛡️', rem: rem, total: this.player.shieldDuration || 10.0, color: 'linear-gradient(to right, #4FC3F7, #0288D1)' });
         }
         if (this.player.hasMagnet) {
             const rem = Math.max(0, (this.player.magnetDuration || 8.0) - (this.player.magnetTimer || 0));
-            activeList.push({ icon: '🧲', name: 'Nam châm', rem: rem, total: this.player.magnetDuration || 8.0, color: 'linear-gradient(to right, #FF1744, #D50000)' });
+            activeList.push({ icon: '🧲', rem: rem, total: this.player.magnetDuration || 8.0, color: 'linear-gradient(to right, #FF1744, #D50000)' });
         }
         if (this.player.hasSlowMo) {
             const rem = Math.max(0, (this.player.slowMoDuration || 6.0) - (this.player.slowMoTimer || 0));
-            activeList.push({ icon: '⏳', name: 'Đồng hồ', rem: rem, total: this.player.slowMoDuration || 6.0, color: 'linear-gradient(to right, #00E5FF, #AA00FF)' });
+            activeList.push({ icon: '⏳', rem: rem, total: this.player.slowMoDuration || 6.0, color: 'linear-gradient(to right, #00E5FF, #AA00FF)' });
         }
 
         if (activeList.length === 0) {
@@ -750,12 +906,11 @@ export class GameScene extends THREE.Group {
         for (const item of activeList) {
             const pct = Math.min(100, Math.max(0, (item.rem / item.total) * 100));
             html += `
-                <div style="display:flex;align-items:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,0.7);border-radius:10px;padding:4px 10px;color:white;font-family:'Lilita One', cursive;box-shadow:0 4px 8px rgba(0,0,0,0.3);min-width:125px;">
-                    <span style="font-size:18px;margin-right:8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${item.icon}</span>
+                <div style="display:flex;align-items:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,0.7);border-radius:10px;padding:4px 8px;color:white;font-family:'Be Vietnam Pro','Nunito',sans-serif;box-shadow:0 4px 8px rgba(0,0,0,0.3);min-width:85px;">
+                    <span style="font-size:18px;margin-right:6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${item.icon}</span>
                     <div style="display:flex;flex-direction:column;flex:1;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;line-height:1;margin-bottom:3px;text-shadow:0 1px 2px rgba(0,0,0,0.8);">
-                            <span style="color:#FFF;">${item.name}</span>
-                            <span style="color:#FFF176;font-size:11px;font-weight:bold;">${item.rem.toFixed(1)}s</span>
+                        <div style="display:flex;justify-content:flex-end;align-items:center;font-size:11px;line-height:1;margin-bottom:3px;text-shadow:0 1px 2px rgba(0,0,0,0.8);">
+                            <span style="color:#FFF176;font-weight:900;">${item.rem.toFixed(1)}s</span>
                         </div>
                         <div style="width:100%;height:5px;background:rgba(255,255,255,0.25);border-radius:3px;overflow:hidden;">
                             <div style="width:${pct}%;height:100%;background:${item.color};border-radius:3px;transition:width 0.1s linear;"></div>
@@ -949,13 +1104,69 @@ export class GameScene extends THREE.Group {
             { transform: "scale(1)" }, { transform: "scale(1.1) rotate(5deg)" }, { transform: "scale(1)" }, { transform: "scale(1.1) rotate(-5deg)" }, { transform: "scale(1)" }
         ], { duration: 2000, iterations: Infinity, easing: "ease-in-out" });
 
-        const title = document.createElement('h2');
-        title.innerText = "GAME OVER";
-        title.style.cssText = "color:#ffffff; font-family:'Lilita One', cursive; margin-top:0; margin-bottom:5px; font-size: 36px; -webkit-text-stroke: 1.5px #0277BD; text-shadow: 0 4px 0 #0277BD, 0 6px 10px rgba(0,0,0,0.2); letter-spacing: 2px;";
+        const title = document.createElement('div');
+        title.style.cssText = "width: 100%; display: flex; justify-content: center; margin-bottom: 8px; margin-top: 5px;";
+        title.innerHTML = `
+            <svg viewBox="0 0 340 75" style="width: 100%; max-width: 290px; filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.3)); overflow: visible;">
+                <defs>
+                    <linearGradient id="gameOverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#E0F7FA" />
+                        <stop offset="25%" stop-color="#4FC3F7" />
+                        <stop offset="70%" stop-color="#0288D1" />
+                        <stop offset="100%" stop-color="#01579B" />
+                    </linearGradient>
+                </defs>
+                <style>
+                    .go-title-text {
+                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-weight: 900;
+                        text-anchor: middle;
+                        font-style: italic;
+                        letter-spacing: 3px;
+                    }
+                    .go-title-stroke {
+                        stroke: #FFFFFF;
+                        stroke-width: 11px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                        paint-order: stroke fill;
+                    }
+                    .go-title-3d {
+                        fill: #013766;
+                        stroke: #013766;
+                        stroke-width: 11px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                    }
+                </style>
+                <!-- 3D Base Shadow -->
+                <g transform="translate(0, 6)">
+                    <text x="170" y="52" font-size="40" class="go-title-text go-title-3d">GAME OVER</text>
+                </g>
+                <!-- Foreground Text with White Stroke + Gradient Fill -->
+                <g>
+                    <text x="170" y="52" font-size="40" fill="url(#gameOverGrad)" class="go-title-text go-title-stroke">GAME OVER</text>
+                </g>
+            </svg>
+        `;
 
-        const scoreText = document.createElement('p');
-        scoreText.innerText = `${this.score}`;
-        scoreText.style.cssText = "font-size:64px; color:#ffffff; font-family:'Lilita One', cursive; margin: 10px 0 25px 0; -webkit-text-stroke: 2px #F50057; text-shadow: 0 6px 0 #F50057, 0 8px 15px rgba(0,0,0,0.4); letter-spacing: 2px;";
+        const scoreText = document.createElement('div');
+        scoreText.style.cssText = "font-size: 58px; font-weight: 900; font-family: 'Be Vietnam Pro', 'Nunito', sans-serif; margin: 10px 0 20px 0; letter-spacing: 2px; text-align: center;";
+        scoreText.innerHTML = `
+            <span style="
+                background: linear-gradient(to bottom, #FFF59D 10%, #FFB300 50%, #E65100 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                filter: drop-shadow(0px 2px 0px #FFFFFF) 
+                        drop-shadow(0px -2px 0px #FFFFFF) 
+                        drop-shadow(2px 0px 0px #FFFFFF) 
+                        drop-shadow(-2px 0px 0px #FFFFFF) 
+                        drop-shadow(0px 6px 0px #BF360C) 
+                        drop-shadow(0px 8px 12px rgba(0,0,0,0.4));
+                display: inline-block;
+                padding: 4px 12px;
+            ">${this.score}</span>
+        `;
 
         const btnContainer = document.createElement('div');
         btnContainer.style.cssText = "display:flex; justify-content:center; gap:15px; margin-top:10px;";

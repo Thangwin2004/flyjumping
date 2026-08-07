@@ -115,9 +115,48 @@ export const UIBuilder = {
             originalRemove();
         };
 
-        const title = document.createElement("h2");
-        title.innerText = "CHƯA KẾT THÚC ĐÂU!";
-        title.style.cssText = "font-family: 'Inter', sans-serif; color: #00B0FF; margin-top: 0;";
+        const title = document.createElement("div");
+        title.style.cssText = "width: 100%; display: flex; justify-content: center; margin-bottom: 12px;";
+        title.innerHTML = `
+            <svg viewBox="0 0 360 65" style="width: 100%; max-width: 320px; filter: drop-shadow(0px 6px 10px rgba(0,0,0,0.3)); overflow: visible;">
+                <defs>
+                    <linearGradient id="reviveTitleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#E0F7FA" />
+                        <stop offset="30%" stop-color="#29B6F6" />
+                        <stop offset="70%" stop-color="#0288D1" />
+                        <stop offset="100%" stop-color="#01579B" />
+                    </linearGradient>
+                </defs>
+                <style>
+                    .rev-title-text {
+                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-weight: 900;
+                        text-anchor: middle;
+                        font-style: italic;
+                    }
+                    .rev-title-stroke {
+                        stroke: #FFFFFF;
+                        stroke-width: 10px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                        paint-order: stroke fill;
+                    }
+                    .rev-title-3d {
+                        fill: #013766;
+                        stroke: #013766;
+                        stroke-width: 10px;
+                        stroke-linejoin: round;
+                        stroke-linecap: round;
+                    }
+                </style>
+                <g transform="translate(0, 5)">
+                    <text x="180" y="44" font-size="28" class="rev-title-text rev-title-3d">CHƯA KẾT THÚC ĐÂU!</text>
+                </g>
+                <g>
+                    <text x="180" y="44" font-size="28" fill="url(#reviveTitleGrad)" class="rev-title-text rev-title-stroke">CHƯA KẾT THÚC ĐÂU!</text>
+                </g>
+            </svg>
+        `;
         
         const heartIcon = document.createElement("div");
         heartIcon.innerText = "💖";
