@@ -413,6 +413,8 @@ export class GameScene extends THREE.Group {
         
         const screenBottom = gameApp.camera.position.y - gameApp.screenBounds.height / 2;
         
+        const canSmash = this.player.hasShield || this.player.isRocketing;
+
         // BOOSTER COLLISIONS & MAGNET ATTRACTION
         if (this.platformManager.boosters) {
             for (const booster of this.platformManager.boosters) {
@@ -444,36 +446,96 @@ export class GameScene extends THREE.Group {
             }
         }
 
-        // Ignore platform/obstacle collisions while rocketing up
-        if (this.player.isRocketing) return;
+        // ENEMY / BOMB COLLISIONS (Smash with Shield or Rocketing!)
+        if (this.platformManager.enemies) {
+            for (const enemy of this.platformManager.enemies) {
+                if (enemy.isDead) continue;
+                
+                const dist = Math.hypot(px - enemy.position.x, this.player.position.y - enemy.position.y);
+                if (dist < this.player.radius + enemy.radius * 0.9) {
+                    if (canSmash) {
+                        // Smash enemy/bomb into explosion!
+                        this.spawnExplosion(enemy.position.clone());
+                        enemy.isDead = true;
+                        enemy.visible = false;
+                        AudioManager.playExplosionSFX();
+                        this.triggerCameraShake(6);
+                    } else if (!this.player.isRocketing) {
+                        // Die
+                        AudioManager.playExplosionSFX();
+                        this.triggerDeathSequence(enemy.position);
+                        enemy.isDead = true;
+                        enemy.visible = false;
+                        return;
+                    }
+                }
+            }
+        }
 
-        // PLATFORM COLLISIONS
+        // SAW BLADE COLLISIONS (Smash with Shield or Rocketing!)
+        if (this.platformManager.sawBlades) {
+            for (const saw of this.platformManager.sawBlades) {
+                if (saw.isDead) continue;
+                const dist = Math.hypot(px - saw.position.x, this.player.position.y - saw.position.y);
+                if (dist < this.player.radius + saw.radius * 0.9) {
+                    if (canSmash) {
+                        // Smash saw blade into pieces!
+                        this.spawnExplosion(saw.position.clone());
+                        saw.isDead = true;
+                        saw.visible = false;
+                        AudioManager.playExplosionSFX();
+                        this.triggerCameraShake(6);
+                    } else if (!this.player.isRocketing) {
+                        AudioManager.playSawBladeHitSFX();
+                        this.triggerDeathSequence(saw.position);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // SPIKE PLATFORM SMASH WHILE ROCKETING
+        if (this.player.isRocketing) {
+            for (const p of this.platformManager.platforms) {
+                if (p.isBroken || p.type !== 'spike') continue;
+                const dist = Math.hypot(px - p.position.x, this.player.position.y - p.position.y);
+                if (dist < p.platformWidth / 2 + this.player.radius) {
+                    p.type = 'fragile';
+                    p.break();
+                    this.spawnExplosion(p.position.clone());
+                    AudioManager.playExplosionSFX();
+                    this.triggerCameraShake(5);
+                }
+            }
+            return; // Ignore normal platform landing while rocketing up
+        }
+
+        // NORMAL PLATFORM LANDING COLLISIONS
         for (const p of this.platformManager.platforms) {
             if (p.isBroken) continue;
             
             const pTop = p.position.y + p.platformHeight / 2;
             const pBottom = p.position.y - p.platformHeight / 2;
             
-            // Ignore platforms that have fallen off screen
             if (pTop < screenBottom) continue;
             
-            // Check horizontal range
             if (Math.abs(px - p.position.x) < p.platformWidth / 2 + this.player.radius * 0.5) {
-                
-                // Falling down -> land on top. Increased tolerance to 25px
                 if (this.player.velocity.y <= 0 && Math.abs(pyBottom - pTop) < 25) {
                     
                     // Hit spike platform?
                     if (p.type === 'spike') {
-                        AudioManager.playSpikeSFX();
-                        if (!this.player.hasShield) {
-                            this.triggerDeathSequence(p.position);
-                            return; // Stop checking
-                        } else {
-                            // Break spike if we have shield, but still bounce slightly
-                            p.type = 'fragile'; // temporarily change type to break it
+                        if (canSmash) {
+                            // Smash spike platform!
+                            p.type = 'fragile';
                             p.break();
+                            this.spawnExplosion(p.position.clone());
+                            AudioManager.playExplosionSFX();
+                            this.triggerCameraShake(5);
                             this.player.jump();
+                        } else {
+                            AudioManager.playSpikeSFX();
+                            this.triggerDeathSequence(p.position);
+                            return;
                         }
                     } else {
                         // Normal platform land
@@ -482,13 +544,11 @@ export class GameScene extends THREE.Group {
                         let hitSpring = false;
                         if (p.hasSpring && p.springMesh) {
                             const springWorldX = p.position.x + p.springMesh.position.x;
-                            // The spring is narrow, require player to land somewhat on it
                             if (Math.abs(px - springWorldX) < 25) { 
                                 hitSpring = true;
                             }
                         }
                         
-                        // Trigger landing VFX
                         const vfxColor = hitSpring ? 0xFFCA28 : 
                             (p.type === 'moving' ? 0x40C4FF : 
                              p.type === 'fragile' ? 0xFF80AB : 0x69F0AE);
@@ -497,12 +557,10 @@ export class GameScene extends THREE.Group {
                             vfxColor
                         );
                         
-                        // 3D Effect: Platform squish on landing
                         gsap.killTweensOf(p.scale);
-                        p.scale.set(1, 0.5, 1); // Squish down
+                        p.scale.set(1, 0.5, 1);
                         gsap.to(p.scale, { y: 1, duration: 0.3, ease: "elastic.out(1, 0.4)" });
                         
-                        // 3D Effect: Camera micro-shake
                         this.triggerCameraShake(hitSpring ? 4 : 2);
                         
                         if (hitSpring) {
@@ -520,48 +578,6 @@ export class GameScene extends THREE.Group {
                             p.break();
                         }
                         break;
-                    }
-                }
-            }
-        }
-        
-        // ENEMY COLLISIONS
-        if (this.platformManager.enemies) {
-            for (const enemy of this.platformManager.enemies) {
-                if (enemy.isDead) continue;
-                
-                const dist = Math.hypot(px - enemy.position.x, pyBottom - enemy.position.y);
-                // Reduce hitbox slightly to be fair
-                if (dist < this.player.radius + enemy.radius * 0.8) {
-                    AudioManager.playExplosionSFX();
-                    if (this.player.hasShield) {
-                        // Kill enemy, keep playing
-                        this.spawnExplosion(enemy.position.clone());
-                        enemy.isDead = true;
-                        enemy.visible = false;
-                        this.triggerCameraShake(5);
-                    } else {
-                        // Die
-                        this.triggerDeathSequence(enemy.position);
-                        enemy.isDead = true;
-                        enemy.visible = false;
-                        return;
-                    }
-                }
-            }
-        }
-
-        // SAW BLADE COLLISIONS
-        if (this.platformManager.sawBlades) {
-            for (const saw of this.platformManager.sawBlades) {
-                const dist = Math.hypot(px - saw.position.x, this.player.position.y - saw.position.y);
-                if (dist < this.player.radius + saw.radius * 0.8) {
-                    AudioManager.playSawBladeHitSFX();
-                    if (this.player.hasShield) {
-                        // Can't kill saw blade, just ignore with shield
-                    } else {
-                        this.triggerDeathSequence(saw.position);
-                        return;
                     }
                 }
             }
