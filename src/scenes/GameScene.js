@@ -221,7 +221,7 @@ export class GameScene extends THREE.Group {
         this.updateFireworks(dtSec);
         this.updateBoosterHUD();
         
-        this.checkCollisions();
+        this.checkCollisions(dtSec);
         this.updateCamera();
         
         // Calculate dynamic score based on vertical position
@@ -406,7 +406,7 @@ export class GameScene extends THREE.Group {
         }
     }
 
-    checkCollisions() {
+    checkCollisions(dtSec) {
         const px = this.player.position.x;
         const pyBottom = this.player.position.y - this.player.radius; // bottom of player
         const pyTop = this.player.position.y + this.player.radius; // top of player
