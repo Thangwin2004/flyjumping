@@ -41,10 +41,10 @@ export class GameScene extends THREE.Group {
         this.milestoneContainer.style.cssText = "position:absolute;top:40%;left:50%;transform:translate(-50%, -50%) scale(0);display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:101;opacity:0;";
         
         this.milestoneEmoji = document.createElement('div');
-        this.milestoneEmoji.style.cssText = "font-size:72px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));";
+        this.milestoneEmoji.style.cssText = "font-size:90px;line-height:1;margin-bottom:5px;filter:drop-shadow(0 10px 15px rgba(0,0,0,0.4));";
         
         this.milestoneText = document.createElement('div');
-        this.milestoneText.style.cssText = "font-family:'Lilita One', cursive;font-size:42px;color:#FFF176;-webkit-text-stroke:1.5px #F57F17;text-shadow:0 4px 0 #F57F17, 0 4px 10px rgba(0,0,0,0.4);letter-spacing:1px;text-align:center;white-space:nowrap;";
+        this.milestoneText.style.cssText = "font-family:'Lilita One', cursive;font-size:54px;background:linear-gradient(to bottom, #FFFFFF 20%, #FFEB3B 50%, #FF9800 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0px 5px 0px #E65100) drop-shadow(0px 8px 10px rgba(0,0,0,0.5));letter-spacing:3px;text-align:center;white-space:nowrap;transform:rotate(-3deg);font-weight:900;";
         
         this.milestoneContainer.appendChild(this.milestoneEmoji);
         this.milestoneContainer.appendChild(this.milestoneText);
@@ -87,6 +87,7 @@ export class GameScene extends THREE.Group {
         this.graceTimer = 1.5; // 1.5 seconds of grace period where player cannot die
         this.milestoneReached = 0;
         this._warmupFrames = 3; // Skip first 3 frames to let scene settle
+        this.timeScale = 1.0; // Reset time scale
 
         // ── Wink: start a new round ──
         this._winkRound = winkGame.startRound();
@@ -156,7 +157,7 @@ export class GameScene extends THREE.Group {
             return;
         }
         
-        const dt = ticker.deltaTime;
+        const dt = ticker.deltaTime * (this.timeScale || 1.0);
         const dtSec = dt / 60;
         
         if (this.graceTimer > 0) {
@@ -283,6 +284,11 @@ export class GameScene extends THREE.Group {
         this.milestoneEmoji.innerText = emoji;
         
         AudioManager.playMilestoneSFX();
+
+        // Slow motion effect
+        this.timeScale = 0.15; // Slow down game to 15% speed
+        gsap.killTweensOf(this, "timeScale");
+        gsap.to(this, { timeScale: 1.0, duration: 1.5, ease: "power2.in" });
         
         // Confetti at center of screen
         const centerPos = new THREE.Vector3(gameApp.GAME_WIDTH / 2, gameApp.camera.position.y, 0);
@@ -291,9 +297,13 @@ export class GameScene extends THREE.Group {
         // Animate popup
         gsap.killTweensOf(this.milestoneContainer);
         gsap.fromTo(this.milestoneContainer, 
-            { scale: 0, opacity: 0 },
-            { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" }
+            { scale: 0, opacity: 0, rotation: -10 },
+            { scale: 1.1, opacity: 1, rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" }
         );
+        // Add a gentle floating effect
+        gsap.to(this.milestoneContainer, {
+            y: "-=20", duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: 1
+        });
         
         // Hide after 2 seconds
         gsap.to(this.milestoneContainer, {
@@ -326,11 +336,11 @@ export class GameScene extends THREE.Group {
         
         const geom = this.getFireworkGeometry();
         
-        for (let burst = 0; burst < 3; burst++) {
-            const burstX = this.player.position.x + (Math.random() - 0.5) * 200;
-            const burstY = this.player.position.y + 100 + Math.random() * 150;
+        for (let burst = 0; burst < 1; burst++) {
+            const burstX = this.player.position.x;
+            const burstY = this.player.position.y + 150;
             
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 15; i++) {
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 const mat = this.getFireworkMaterial(color);
                 
@@ -338,14 +348,14 @@ export class GameScene extends THREE.Group {
                 particle.position.set(burstX, burstY, 30 + Math.random() * 50);
                 
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 100 + Math.random() * 200;
+                const speed = 600 + Math.random() * 600; // explode very wide
                 particle.userData = {
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
-                    vz: (Math.random() - 0.5) * 100,
-                    life: 1.0 + Math.random() * 0.5,
+                    vz: (Math.random() - 0.5) * 150,
+                    life: 1.5 + Math.random() * 0.5,
                     maxLife: 0,
-                    size: 2 + Math.random() * 6
+                    size: 3 + Math.random() * 6
                 };
                 particle.userData.maxLife = particle.userData.life;
                 particle.scale.set(particle.userData.size, particle.userData.size, particle.userData.size);
