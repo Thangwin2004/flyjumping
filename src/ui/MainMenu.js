@@ -23,21 +23,28 @@ export class MainMenu {
         UIBuilder.clearUI();
         this.container.innerHTML = ''; // clear
 
-        // Title
+        // Title - Vibrant 3D Cartoon Bubble Style
         const title = document.createElement('h1');
         title.innerHTML = "RỒNG BÉO<br>TẬP BAY";
         title.style.cssText = `
-            font-family: 'Lilita One', 'Inter', sans-serif;
-            font-size: 60px;
+            font-family: 'Lilita One', 'Inter', cursive, sans-serif;
+            font-size: clamp(48px, 12vw, 68px);
             font-weight: 900;
-            color: #FF4081; 
             text-align: center;
-            -webkit-text-stroke: 2.5px #FFFFFF;
-            filter: drop-shadow(0px 6px 0px #C2185B) drop-shadow(0px 8px 12px rgba(0,0,0,0.35));
-            margin-top: -40px;
-            margin-bottom: 50px;
-            line-height: 1.15;
-            letter-spacing: 2px;
+            background: linear-gradient(to bottom, #FFFFFF 15%, #FFF176 45%, #FF9800 80%, #E65100 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 2px 0px #FFFFFF) 
+                    drop-shadow(0px -2px 0px #FFFFFF) 
+                    drop-shadow(2px 0px 0px #FFFFFF) 
+                    drop-shadow(-2px 0px 0px #FFFFFF) 
+                    drop-shadow(0px 7px 0px #BF360C) 
+                    drop-shadow(0px 10px 16px rgba(0,0,0,0.45));
+            margin-top: -30px;
+            margin-bottom: 45px;
+            line-height: 1.1;
+            letter-spacing: 3px;
+            transform: rotate(-2deg);
         `;
         this.container.appendChild(title);
 
