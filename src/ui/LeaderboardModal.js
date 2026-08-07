@@ -59,13 +59,13 @@ export class LeaderboardModal {
         ribbon.innerText = "BẢNG XẾP HẠNG";
         card.appendChild(ribbon);
 
-        // Header Labels
+        // Header Labels - Aligned perfectly with row padding (35px = 20px container + 15px row)
         const header = document.createElement("div");
-        header.style.cssText = "display:flex; width:100%; justify-content:space-between; margin-top:45px; color:#00B0FF; font-family:'Be Vietnam Pro', 'Nunito', sans-serif; font-weight:900; font-size:clamp(12px, 3.5vw, 15px); padding:0 24px; box-sizing:border-box;";
+        header.style.cssText = "display:flex; width:100%; justify-content:space-between; align-items:center; margin-top:45px; color:#00B0FF; font-family:'Be Vietnam Pro', 'Nunito', sans-serif; font-weight:900; font-size:clamp(12px, 3.5vw, 15px); padding:0 35px; box-sizing:border-box;";
         header.innerHTML = `
-            <span style="flex:1; text-align:left;">HẠNG</span>
-            <span style="flex:2; text-align:left; padding-left:10px;">THÀNH VIÊN</span>
-            <span style="flex:1; text-align:right;">ĐIỂM</span>
+            <span style="width:64px; text-align:center; flex-shrink:0;">HẠNG</span>
+            <span style="flex:1; text-align:left; padding-left:8px;">THÀNH VIÊN</span>
+            <span style="width:90px; text-align:right; flex-shrink:0;">ĐIỂM</span>
         `;
         card.appendChild(header);
 
@@ -93,22 +93,26 @@ export class LeaderboardModal {
                 
                 row.style.cssText = `display:flex; align-items:center; background:${bg}; border:1px solid #dcd6bf; border-radius:10px; padding:8px 15px; color:#241d4f; font-family:'Be Vietnam Pro', 'Nunito', sans-serif; font-weight:bold; font-size:clamp(14px, 4vw, 17px); box-sizing:border-box;`;
                 
-                let rankStr = `${index + 1}`;
-                if (index === 0) rankStr = "🥇";
-                if (index === 1) rankStr = "🥈";
-                if (index === 2) rankStr = "🥉";
+                let rankContent = `<span style="font-size:22px; font-weight:900; color:#241d4f;">${index + 1}</span>`;
+                if (index === 0) rankContent = `<span style="font-size:34px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.2);">🥇</span>`;
+                if (index === 1) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥈</span>`;
+                if (index === 2) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥉</span>`;
 
                 const avatarUrl = p.avatar || "/assets/image/imagebldp/001_avatar_laclac.png";
 
                 row.innerHTML = `
-                    <span style="flex:1; text-align:left; font-size:clamp(18px, 5vw, 22px);">${rankStr}</span>
-                    <div style="flex:2; display:flex; align-items:center; gap:8px; padding-left:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        <div style="width:26px; height:26px; border-radius:50%; background:#fff; border:2px solid #ddd; overflow:hidden; flex-shrink:0;">
+                    <div style="width:64px; min-width:64px; text-align:center; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
+                        ${rankContent}
+                    </div>
+                    <div style="flex:1; display:flex; align-items:center; gap:8px; padding-left:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <div style="width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid #ddd; overflow:hidden; flex-shrink:0;">
                             <img src="${avatarUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/image/imagebldp/001_avatar_laclac.png'">
                         </div>
                         <span style="overflow:hidden; text-overflow:ellipsis; font-weight:900;">${p.name}</span>
                     </div>
-                    <span style="flex:1; text-align:right; font-weight:900; color:#E65100;">${p.score}</span>
+                    <div style="width:90px; min-width:90px; text-align:right; font-weight:900; color:#E65100; font-size:18px; flex-shrink:0;">
+                        ${p.score}
+                    </div>
                 `;
                 listContainer.appendChild(row);
             });
@@ -133,7 +137,7 @@ export class LeaderboardModal {
             });
         }
 
-        // Pinned Footer (Personal Best)
+        // Pinned Footer (Personal Best) - Aligned perfectly with rows above
         const effUser = getEffectiveUser();
         const playerName = effUser ? effUser.name : "Bạn (Khách)";
         const playerAvatar = effUser ? effUser.avatar : "/assets/image/imagebldp/001_avatar_laclac.png";
@@ -142,14 +146,18 @@ export class LeaderboardModal {
         const footer = document.createElement("div");
         footer.style.cssText = "width:calc(100% - 40px); background:#FFF8E1; border:2.5px solid #FFD54F; border-radius:12px; padding:10px 15px; display:flex; align-items:center; color:#241d4f; font-family:'Be Vietnam Pro', 'Nunito', sans-serif; font-weight:900; font-size:clamp(14px, 4vw, 17px); margin-bottom:20px; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);";
         footer.innerHTML = `
-            <span style="flex:1; text-align:left; font-size:clamp(16px, 4.5vw, 20px); color:#FF8F00;">🎖️</span>
-            <div style="flex:2; display:flex; align-items:center; gap:8px; padding-left:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                <div style="width:28px; height:28px; border-radius:50%; background:#fff; border:2px solid #FFC107; overflow:hidden; flex-shrink:0;">
+            <div style="width:64px; min-width:64px; text-align:center; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
+                <span style="font-size:26px; line-height:1;">🎖️</span>
+            </div>
+            <div style="flex:1; display:flex; align-items:center; gap:8px; padding-left:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <div style="width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid #FFC107; overflow:hidden; flex-shrink:0;">
                     <img src="${playerAvatar}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/image/imagebldp/001_avatar_laclac.png'">
                 </div>
                 <span style="overflow:hidden; text-overflow:ellipsis; color:#D84315;">${playerName}</span>
             </div>
-            <span style="flex:1; text-align:right; color:#D84315; font-size:18px;">${myHighScore}</span>
+            <div style="width:90px; min-width:90px; text-align:right; color:#D84315; font-size:18px; font-weight:900; flex-shrink:0;">
+                ${myHighScore}
+            </div>
         `;
         card.appendChild(footer);
 
