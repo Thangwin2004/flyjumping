@@ -34,8 +34,8 @@ export const AudioManager = {
 
     updateVolumes() {
         if (!this.ctx) return;
-        // Adjusted per user request: BGM louder, SFX softer
-        this.bgmGain.gain.value = this.isBgmMuted ? 0 : 0.6;
+        // Reduced BGM volume to a comfortable, gentle level
+        this.bgmGain.gain.value = this.isBgmMuted ? 0 : 0.25;
         this.sfxGain.gain.value = this.isSfxMuted ? 0 : 0.5;
     },
 
