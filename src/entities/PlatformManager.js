@@ -307,10 +307,13 @@ export class PlatformManager extends THREE.Group {
         }
     }
 
-    update(dt, cameraY) {
+    update(dt, cameraY, hasSlowMo = false) {
+        // SlowMo item slows down moving platforms, enemies, saw blades, and wind gusts to 30% speed
+        const entityDt = hasSlowMo ? dt * 0.3 : dt;
+
         // Update platforms
         for (const p of this.platforms) {
-            p.update(dt);
+            p.update(entityDt);
         }
         
         // Apply parallax offset so the physical ground sticks to the slowly scrolling 2D background
@@ -324,7 +327,7 @@ export class PlatformManager extends THREE.Group {
         if (this.enemies) {
             for (let i = this.enemies.length - 1; i >= 0; i--) {
                 const enemy = this.enemies[i];
-                enemy.update(dt);
+                enemy.update(entityDt);
                 if (enemy.isDead && enemy.position.y < -1000) {
                     this.remove(enemy);
                     this.enemies.splice(i, 1);
@@ -340,13 +343,13 @@ export class PlatformManager extends THREE.Group {
 
         if (this.sawBlades) {
             for (const s of this.sawBlades) {
-                s.update(dt);
+                s.update(entityDt);
             }
         }
 
         if (this.windGusts) {
             for (const w of this.windGusts) {
-                w.update(dt);
+                w.update(entityDt);
             }
         }
 

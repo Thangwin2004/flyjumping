@@ -172,26 +172,28 @@ export class GameScene extends THREE.Group {
         }
         
         this.player.update(dt);
-        this.platformManager.update(dt, gameApp.camera.position.y);
+        // Pass slowMo state to platformManager to slow down moving platforms, enemies, and hazards
+        this.platformManager.update(dt, gameApp.camera.position.y, this.player.hasSlowMo);
         
-        // Magnet effect: slowly pull player toward nearest platform horizontally if falling
+        // Magnet effect: powerful magnetic pull toward nearest safe platform when falling
         if (this.player.hasMagnet && this.player.velocity.y < 0 && !this.player.isRocketing) {
             let closestPlat = null;
             let closestDist = 9999;
             for (const p of this.platformManager.platforms) {
                 if (p.isBroken || p.type === 'spike') continue;
-                if (p.position.y < this.player.position.y) {
-                    const dist = Math.abs(this.player.position.x - p.position.x);
-                    if (dist < closestDist) {
-                        closestDist = dist;
+                const vertDist = this.player.position.y - p.position.y;
+                if (vertDist > 0 && vertDist < 280) {
+                    const horizDist = Math.abs(this.player.position.x - p.position.x);
+                    if (horizDist < closestDist) {
+                        closestDist = horizDist;
                         closestPlat = p;
                     }
                 }
             }
-            if (closestPlat && closestDist < 200) {
-                // Pull horizontally
-                const pullDir = Math.sign(closestPlat.position.x - this.player.position.x);
-                this.player.velocity.x += pullDir * 80 * dtSec;
+            if (closestPlat && closestDist < 280) {
+                // Powerful magnetic pull directly toward center of platform (guaranteed auto-land)
+                const dx = closestPlat.position.x - this.player.position.x;
+                this.player.velocity.x += Math.sign(dx) * Math.min(Math.abs(dx) * 15, 500) * dtSec;
             }
         }
 
