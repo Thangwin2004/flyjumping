@@ -111,13 +111,6 @@ export class Player extends THREE.Group {
         // Shield visual (bubble aura)
         this.shieldMesh = null;
         this.buildShieldAura();
-        
-        // Magnet & SlowMo visuals
-        this.magnetMesh = null;
-        this.buildMagnetAura();
-        
-        this.slowMoMesh = null;
-        this.buildSlowMoAura();
 
         // Speed lines visual
         this.speedLines = null;
@@ -146,52 +139,21 @@ export class Player extends THREE.Group {
     }
 
     buildShieldAura() {
-        const geom = new THREE.SphereGeometry(35, 16, 16);
-        const mat = new THREE.MeshStandardMaterial({
-            color: 0x4FC3F7,
-            transparent: true,
-            opacity: 0.25,
-            emissive: 0x4FC3F7,
-            emissiveIntensity: 0.4,
-            side: THREE.DoubleSide,
-            roughness: 0.1
-        });
-        this.shieldMesh = new THREE.Mesh(geom, mat);
-        this.shieldMesh.visible = false;
-        this.add(this.shieldMesh);
-    }
-
-    buildMagnetAura() {
-        // Red & White Magnetic Ring under feet
-        const geom = new THREE.TorusGeometry(36, 4, 12, 24);
-        const mat = new THREE.MeshStandardMaterial({
-            color: 0xFF1744,
-            emissive: 0xFF1744,
-            emissiveIntensity: 0.7,
-            transparent: true,
-            opacity: 0.8
-        });
-        this.magnetMesh = new THREE.Mesh(geom, mat);
-        this.magnetMesh.rotation.x = Math.PI / 2;
-        this.magnetMesh.position.y = -10;
-        this.magnetMesh.visible = false;
-        this.add(this.magnetMesh);
-    }
-
-    buildSlowMoAura() {
-        // Cyan / Purple Time Dilation Ring
-        const geom = new THREE.TorusGeometry(40, 3, 12, 24);
+        const geom = new THREE.SphereGeometry(58, 24, 24);
         const mat = new THREE.MeshStandardMaterial({
             color: 0x00E5FF,
-            emissive: 0x00E5FF,
-            emissiveIntensity: 0.8,
             transparent: true,
-            opacity: 0.75
+            opacity: 0.35,
+            emissive: 0x00B0FF,
+            emissiveIntensity: 0.5,
+            side: THREE.DoubleSide,
+            roughness: 0.1,
+            metalness: 0.2
         });
-        this.slowMoMesh = new THREE.Mesh(geom, mat);
-        this.slowMoMesh.rotation.x = Math.PI / 3;
-        this.slowMoMesh.visible = false;
-        this.add(this.slowMoMesh);
+        this.shieldMesh = new THREE.Mesh(geom, mat);
+        this.shieldMesh.position.y = 10; // Centered to enclose full character body & head
+        this.shieldMesh.visible = false;
+        this.add(this.shieldMesh);
     }
 
     reset() {
@@ -230,15 +192,14 @@ export class Player extends THREE.Group {
 
     clearAllBoosters() {
         this.hasShield = false;
+        this.shieldTimer = 0;
         if (this.shieldMesh) this.shieldMesh.visible = false;
 
         this.hasSlowMo = false;
         this.slowMoTimer = 0;
-        if (this.slowMoMesh) this.slowMoMesh.visible = false;
 
         this.hasMagnet = false;
         this.magnetTimer = 0;
-        if (this.magnetMesh) this.magnetMesh.visible = false;
         this.isRocketing = false;
         this.rocketTimer = 0;
 
@@ -400,29 +361,19 @@ export class Player extends THREE.Group {
             }
         }
 
-        // Slow-Mo timer & aura update
+        // Slow-Mo timer update
         if (this.hasSlowMo) {
             this.slowMoTimer += dtSec;
-            if (this.slowMoMesh) {
-                this.slowMoMesh.visible = true;
-                this.slowMoMesh.rotation.z += dtSec * 3;
-            }
             if (this.slowMoTimer >= this.slowMoDuration) {
                 this.hasSlowMo = false;
-                if (this.slowMoMesh) this.slowMoMesh.visible = false;
             }
         }
 
-        // Magnet timer & aura update
+        // Magnet timer update
         if (this.hasMagnet) {
             this.magnetTimer += dtSec;
-            if (this.magnetMesh) {
-                this.magnetMesh.visible = true;
-                this.magnetMesh.rotation.z += dtSec * 5;
-            }
             if (this.magnetTimer >= this.magnetDuration) {
                 this.hasMagnet = false;
-                if (this.magnetMesh) this.magnetMesh.visible = false;
             }
         }
 
