@@ -69,6 +69,11 @@ export class GameScene extends THREE.Group {
         };
         document.getElementById('game-container').appendChild(this.settingsBtn);
         
+        // Active Boosters Timer HUD (Top-Left under score)
+        this.boosterHUD = document.createElement('div');
+        this.boosterHUD.style.cssText = "position:absolute;top:85px;left:30px;display:flex;flex-direction:column;gap:6px;z-index:100;pointer-events:none;";
+        document.getElementById('game-container').appendChild(this.boosterHUD);
+        
         this.score = 0;
         this.state = 'playing'; // playing, gameover
         this.graceTimer = 0; // Grace period timer
@@ -95,6 +100,10 @@ export class GameScene extends THREE.Group {
         this.updateScore();
         this.scoreElement.style.display = 'block';
         this.settingsBtn.style.display = 'flex';
+        if (this.boosterHUD) {
+            this.boosterHUD.style.display = 'flex';
+            this.boosterHUD.innerHTML = '';
+        }
         
         this.platformManager.reset();
         this.player.reset();
@@ -210,6 +219,7 @@ export class GameScene extends THREE.Group {
         this.landingVFX.update(dtSec);
         this.confettiVFX.update(dtSec);
         this.updateFireworks(dtSec);
+        this.updateBoosterHUD();
         
         this.checkCollisions();
         this.updateCamera();
@@ -403,11 +413,23 @@ export class GameScene extends THREE.Group {
         
         const screenBottom = gameApp.camera.position.y - gameApp.screenBounds.height / 2;
         
-        // BOOSTER COLLISIONS
+        // BOOSTER COLLISIONS & MAGNET ATTRACTION
         if (this.platformManager.boosters) {
             for (const booster of this.platformManager.boosters) {
                 if (booster.isCollected) continue;
                 
+                // If player has Magnet active, pull item boosters toward player from afar!
+                if (this.player.hasMagnet) {
+                    const bDist = Math.hypot(px - booster.position.x, this.player.position.y - booster.position.y);
+                    if (bDist < 450) { // 450px attraction radius
+                        const pullDirX = (px - booster.position.x) / (bDist || 1);
+                        const pullDirY = (this.player.position.y - booster.position.y) / (bDist || 1);
+                        const pullSpeed = 400 * dtSec * 60;
+                        booster.position.x += pullDirX * Math.min(bDist, pullSpeed) * dtSec * 3;
+                        booster.position.y += pullDirY * Math.min(bDist, pullSpeed) * dtSec * 3;
+                    }
+                }
+
                 const dist = Math.hypot(px - booster.position.x, this.player.position.y - booster.position.y);
                 if (dist < this.player.radius + booster.radius) {
                     if (booster.collect()) {
@@ -677,6 +699,54 @@ export class GameScene extends THREE.Group {
 
     updateScore() {
         this.scoreElement.innerText = `${this.score}`;
+    }
+
+    updateBoosterHUD() {
+        if (!this.boosterHUD || !this.player) return;
+        
+        const activeList = [];
+        
+        if (this.player.isRocketing) {
+            const rem = Math.max(0, 2.0 - (this.player.rocketTimer || 0));
+            activeList.push({ icon: '🚀', name: 'Tên lửa', rem: rem, total: 2.0, color: 'linear-gradient(to right, #FF5252, #FF793F)' });
+        }
+        if (this.player.hasShield) {
+            const rem = Math.max(0, (this.player.shieldDuration || 10.0) - (this.player.shieldTimer || 0));
+            activeList.push({ icon: '🛡️', name: 'Khiên', rem: rem, total: this.player.shieldDuration || 10.0, color: 'linear-gradient(to right, #4FC3F7, #0288D1)' });
+        }
+        if (this.player.hasMagnet) {
+            const rem = Math.max(0, (this.player.magnetDuration || 8.0) - (this.player.magnetTimer || 0));
+            activeList.push({ icon: '🧲', name: 'Nam châm', rem: rem, total: this.player.magnetDuration || 8.0, color: 'linear-gradient(to right, #FF1744, #D50000)' });
+        }
+        if (this.player.hasSlowMo) {
+            const rem = Math.max(0, (this.player.slowMoDuration || 6.0) - (this.player.slowMoTimer || 0));
+            activeList.push({ icon: '⏳', name: 'Đồng hồ', rem: rem, total: this.player.slowMoDuration || 6.0, color: 'linear-gradient(to right, #00E5FF, #AA00FF)' });
+        }
+
+        if (activeList.length === 0) {
+            this.boosterHUD.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        for (const item of activeList) {
+            const pct = Math.min(100, Math.max(0, (item.rem / item.total) * 100));
+            html += `
+                <div style="display:flex;align-items:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,0.7);border-radius:10px;padding:4px 10px;color:white;font-family:'Lilita One', cursive;box-shadow:0 4px 8px rgba(0,0,0,0.3);min-width:125px;">
+                    <span style="font-size:18px;margin-right:8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${item.icon}</span>
+                    <div style="display:flex;flex-direction:column;flex:1;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;line-height:1;margin-bottom:3px;text-shadow:0 1px 2px rgba(0,0,0,0.8);">
+                            <span style="color:#FFF;">${item.name}</span>
+                            <span style="color:#FFF176;font-size:11px;font-weight:bold;">${item.rem.toFixed(1)}s</span>
+                        </div>
+                        <div style="width:100%;height:5px;background:rgba(255,255,255,0.25);border-radius:3px;overflow:hidden;">
+                            <div style="width:${pct}%;height:100%;background:${item.color};border-radius:3px;transition:width 0.1s linear;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        this.boosterHUD.innerHTML = html;
     }
 
     openSettings() {
@@ -974,6 +1044,9 @@ export class GameScene extends THREE.Group {
         }
         if (this.settingsBtn && this.settingsBtn.parentNode) {
             this.settingsBtn.parentNode.removeChild(this.settingsBtn);
+        }
+        if (this.boosterHUD && this.boosterHUD.parentNode) {
+            this.boosterHUD.parentNode.removeChild(this.boosterHUD);
         }
         if (this.milestoneContainer && this.milestoneContainer.parentNode) {
             this.milestoneContainer.parentNode.removeChild(this.milestoneContainer);
