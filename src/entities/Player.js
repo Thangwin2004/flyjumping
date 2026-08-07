@@ -17,6 +17,7 @@ export class Player extends THREE.Group {
             
             // Adjust center (assume center is roughly at origin for ground)
             this.model.position.y = -20; 
+            this.model.position.x = 0;
             
             // Rotate to face camera (often FBX from Mixamo faces +Z)
             this.model.rotation.y = 0;
