@@ -33,7 +33,20 @@ body {
     z-index: 10;
 }
 
+/* Buttons reset */
+button {
+    outline: none !important;
+    border: none;
+    background: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    box-sizing: border-box;
+}
+
 /* Buttons will enable pointer-events */
 .ui-button {
     pointer-events: auto;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
 }

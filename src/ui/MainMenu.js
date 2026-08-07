@@ -27,28 +27,34 @@ export class MainMenu {
         const title = document.createElement('h1');
         title.innerHTML = "RỒNG BÉO<br>TẬP BAY";
         title.style.cssText = `
-            font-family: 'Inter', sans-serif;
-            font-size: 64px;
+            font-family: 'Lilita One', 'Inter', sans-serif;
+            font-size: 60px;
             font-weight: 900;
-            color: #FF80AB; 
+            color: #FF4081; 
             text-align: center;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.2), 0px 6px 0px #F50057, 0px -2px 0px #fff, -2px 0px 0px #fff, 2px 0px 0px #fff;
-            margin-top: -50px;
-            margin-bottom: 60px;
-            line-height: 1.1;
+            -webkit-text-stroke: 2.5px #FFFFFF;
+            filter: drop-shadow(0px 6px 0px #C2185B) drop-shadow(0px 8px 12px rgba(0,0,0,0.35));
+            margin-top: -40px;
+            margin-bottom: 50px;
+            line-height: 1.15;
+            letter-spacing: 2px;
         `;
         this.container.appendChild(title);
 
         const createNavBtn = (iconSvg, size, onClick, colorTop, colorBot, colorShadow) => {
             const btn = document.createElement("button");
+            btn.className = "ui-button";
             btn.style.cssText = `
                 width: ${size}px; height: ${size}px; 
                 border-radius: 50%; 
-                border: 4px solid #fff; 
+                border: 4px solid #ffffff; 
                 background: linear-gradient(to bottom, ${colorTop}, ${colorBot}); 
                 box-shadow: 0 5px 0 ${colorShadow}, 0 8px 15px rgba(0,0,0,0.3); 
                 cursor: pointer; transition: transform 0.1s; 
                 display: flex; justify-content: center; align-items: center; padding: 0;
+                outline: none; -webkit-tap-highlight-color: transparent;
+                background-clip: padding-box; box-sizing: border-box;
+                overflow: hidden; flex-shrink: 0;
             `;
             btn.innerHTML = iconSvg;
             btn.onclick = () => {
