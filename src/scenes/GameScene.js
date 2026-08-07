@@ -465,6 +465,7 @@ export class GameScene extends THREE.Group {
                     
                     // Hit spike platform?
                     if (p.type === 'spike') {
+                        AudioManager.playSpikeSFX();
                         if (!this.player.hasShield) {
                             this.triggerDeathSequence(p.position);
                             return; // Stop checking
@@ -532,12 +533,12 @@ export class GameScene extends THREE.Group {
                 const dist = Math.hypot(px - enemy.position.x, pyBottom - enemy.position.y);
                 // Reduce hitbox slightly to be fair
                 if (dist < this.player.radius + enemy.radius * 0.8) {
+                    AudioManager.playExplosionSFX();
                     if (this.player.hasShield) {
                         // Kill enemy, keep playing
                         this.spawnExplosion(enemy.position.clone());
                         enemy.isDead = true;
                         enemy.visible = false;
-                        AudioManager.playSawBladeSFX(); // Reusing saw sound for enemy kill
                         this.triggerCameraShake(5);
                     } else {
                         // Die
@@ -555,10 +556,10 @@ export class GameScene extends THREE.Group {
             for (const saw of this.platformManager.sawBlades) {
                 const dist = Math.hypot(px - saw.position.x, this.player.position.y - saw.position.y);
                 if (dist < this.player.radius + saw.radius * 0.8) {
+                    AudioManager.playSawBladeHitSFX();
                     if (this.player.hasShield) {
                         // Can't kill saw blade, just ignore with shield
                     } else {
-                        AudioManager.playSawBladeSFX();
                         this.triggerDeathSequence(saw.position);
                         return;
                     }
@@ -570,6 +571,7 @@ export class GameScene extends THREE.Group {
     triggerDeathSequence(impactPos) {
         if (this.graceTimer > 0) return; // Cannot die in grace period
 
+        AudioManager.playExplosionSFX();
         this.state = 'exploding'; // Prevent further updates
         
         // Strong camera shake

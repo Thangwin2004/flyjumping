@@ -182,6 +182,67 @@ export const AudioManager = {
         osc.stop(this.ctx.currentTime + 0.3);
     },
 
+    playExplosionSFX() {
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.35);
+        
+        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.7, this.ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.35);
+    },
+
+    playSpikeSFX() {
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.2);
+        
+        gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+    },
+
+    playSawBladeHitSFX() {
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.25);
+        
+        gain.gain.setValueAtTime(0.65, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+    },
+
     toggleBgm() {
         this.isBgmMuted = !this.isBgmMuted;
         localStorage.setItem('peanutJumpBgmMuted', this.isBgmMuted);
