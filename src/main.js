@@ -5,6 +5,7 @@ import { AudioManager } from './managers/AudioManager';
 import { MainMenu } from './ui/MainMenu';
 import { winkGame } from './integrations/wink/wink-adapter.js';
 import { waitForGameFonts } from './utils/fontLoader.js';
+import { installFocusPause } from './utils/focusPause.js';
 
 async function bootstrap() {
     console.log("Initializing Game...");
@@ -30,11 +31,19 @@ async function bootstrap() {
     await AssetManager.init();
     
     console.log("All systems go! Ready to start Main Menu.");
+
+    const focusPause = installFocusPause({
+        isRunning: () => gameApp.isRunning,
+        pause: () => gameApp.stop(),
+        resume: () => gameApp.start(),
+        pauseAudio: () => AudioManager.pauseForFocus(),
+        resumeAudio: () => AudioManager.resumeFromFocus(),
+    });
     
     // ── Wink Bridge lifecycle binding ──
     winkGame.bindLifecycle({
-        onPause: () => { if (gameApp.ticker) gameApp.ticker.stop(); },
-        onResume: () => { if (gameApp.ticker) gameApp.ticker.start(); },
+        onPause: focusPause.pauseFromHost,
+        onResume: focusPause.resumeFromHost,
         onMute: () => AudioManager.setMuted(true),
         onUnmute: () => AudioManager.setMuted(false),
     });
