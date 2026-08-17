@@ -16,7 +16,7 @@ export class SettingsModal {
         card.style.cssText = "background:#fbfaf5;border:8px solid #40C4FF;border-radius:24px;width:260px;max-width:90%;padding:35px 20px 30px 20px;display:flex;flex-direction:column;align-items:center;box-shadow:0 15px 30px rgba(0,0,0,0.5); text-align: center; position:relative;";
         
         const ribbon = document.createElement("div");
-        ribbon.style.cssText = "position:absolute; top:-30px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 30px; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Inter', sans-serif; font-size:22px; font-weight:900; letter-spacing:2px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2;";
+        ribbon.style.cssText = "position:absolute; top:-30px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 30px; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', sans-serif; font-size:22px; font-weight:900; letter-spacing:2px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2;";
         ribbon.innerText = "CÀI ĐẶT";
         card.appendChild(ribbon);
 

@@ -56,7 +56,7 @@ export class MainMenu {
                 </defs>
                 <style>
                     .title-text {
-                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-family: 'Baloo 2', 'Be Vietnam Pro', sans-serif;
                         font-weight: 900;
                         text-anchor: middle;
                         font-style: italic;

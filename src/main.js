@@ -4,9 +4,21 @@ import { AssetManager } from './managers/AssetManager';
 import { AudioManager } from './managers/AudioManager';
 import { MainMenu } from './ui/MainMenu';
 import { winkGame } from './integrations/wink/wink-adapter.js';
+import { waitForGameFonts } from './utils/fontLoader.js';
 
 async function bootstrap() {
     console.log("Initializing Game...");
+
+    await waitForGameFonts([
+        "400 1em 'Be Vietnam Pro'",
+        "500 1em 'Be Vietnam Pro'",
+        "600 1em 'Be Vietnam Pro'",
+        "700 1em 'Be Vietnam Pro'",
+        "800 1em 'Be Vietnam Pro'",
+        "900 1em 'Be Vietnam Pro'",
+        "700 1em 'Baloo 2'",
+        "800 1em 'Baloo 2'",
+    ]);
     
     // 1. Initialize Pixi Application
     await gameApp.init();

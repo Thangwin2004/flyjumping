@@ -32,7 +32,7 @@ export class GameScene extends THREE.Group {
         
         // UI layer (HTML instead of Pixi)
         this.scoreElement = document.createElement('div');
-        this.scoreElement.style.cssText = "position:absolute;top:20px;left:30px;font-family:'Lilita One', cursive;font-size:58px;color:#ffffff;-webkit-text-stroke:2px #F50057;text-shadow:0 6px 0 #F50057, 0 8px 15px rgba(0,0,0,0.4);z-index:100;pointer-events:none; letter-spacing: 2px;";
+        this.scoreElement.style.cssText = "position:absolute;top:20px;left:30px;font-family:'Be Vietnam Pro', sans-serif;font-size:58px;color:#ffffff;-webkit-text-stroke:2px #F50057;text-shadow:0 6px 0 #F50057, 0 8px 15px rgba(0,0,0,0.4);z-index:100;pointer-events:none; letter-spacing: 2px;";
         this.scoreElement.innerText = "0";
         document.getElementById('game-container').appendChild(this.scoreElement);
         
@@ -305,7 +305,7 @@ export class GameScene extends THREE.Group {
                 </defs>
                 <style>
                     .ms-text {
-                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-family:'Be Vietnam Pro', sans-serif;
                         font-weight: 900;
                         text-anchor: middle;
                         font-style: italic;
@@ -906,7 +906,7 @@ export class GameScene extends THREE.Group {
         for (const item of activeList) {
             const pct = Math.min(100, Math.max(0, (item.rem / item.total) * 100));
             html += `
-                <div style="display:flex;align-items:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,0.7);border-radius:10px;padding:4px 8px;color:white;font-family:'Be Vietnam Pro','Nunito',sans-serif;box-shadow:0 4px 8px rgba(0,0,0,0.3);min-width:85px;">
+                <div style="display:flex;align-items:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,0.7);border-radius:10px;padding:4px 8px;color:white;font-family:'Be Vietnam Pro', sans-serif;box-shadow:0 4px 8px rgba(0,0,0,0.3);min-width:85px;">
                     <span style="font-size:18px;margin-right:6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${item.icon}</span>
                     <div style="display:flex;flex-direction:column;flex:1;">
                         <div style="display:flex;justify-content:flex-end;align-items:center;font-size:11px;line-height:1;margin-bottom:3px;text-shadow:0 1px 2px rgba(0,0,0,0.8);">
@@ -1124,7 +1124,7 @@ export class GameScene extends THREE.Group {
                 </defs>
                 <style>
                     .go-title-text {
-                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-family:'Be Vietnam Pro', sans-serif;
                         font-weight: 900;
                         text-anchor: middle;
                         font-style: italic;
@@ -1157,7 +1157,7 @@ export class GameScene extends THREE.Group {
         `;
 
         const scoreText = document.createElement('div');
-        scoreText.style.cssText = "font-size: 58px; font-weight: 900; font-family: 'Be Vietnam Pro', 'Nunito', sans-serif; margin: 10px 0 20px 0; letter-spacing: 2px; text-align: center;";
+        scoreText.style.cssText = "font-size: 58px; font-weight: 900; font-family:'Be Vietnam Pro', sans-serif; margin: 10px 0 20px 0; letter-spacing: 2px; text-align: center;";
         scoreText.innerHTML = `
             <span style="
                 background: linear-gradient(to bottom, #FFF59D 10%, #FFB300 50%, #E65100 100%);
@@ -1206,7 +1206,7 @@ export class GameScene extends THREE.Group {
         const svgs = {
             'home': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
             'replay': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M17.65 6.35A7.95 7.95 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>',
-            'ad': '<svg viewBox="0 0 54 30" width="46" height="26"><rect x="0" y="0" width="54" height="30" rx="8" fill="#ffffff" /><path d="M12,9 L12,21 L21,15 Z" fill="#E65100" /><text x="36" y="21" font-family="\'Lilita One\', Arial, sans-serif" font-size="18" fill="#E65100" text-anchor="middle">x2</text></svg>'
+            'ad': '<svg viewBox="0 0 54 30" width="46" height="26"><rect x="0" y="0" width="54" height="30" rx="8" fill="#ffffff" /><path d="M12,9 L12,21 L21,15 Z" fill="#E65100" /><text x="36" y="21" font-family="Be Vietnam Pro, sans-serif" font-size="18" fill="#E65100" text-anchor="middle">x2</text></svg>'
         };
 
         const homeBtn = createNavBtn(svgs['home'], () => {
