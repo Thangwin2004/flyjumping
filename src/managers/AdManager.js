@@ -17,7 +17,7 @@ export const AdManager = {
             adOverlay.style.justifyContent = 'center';
             adOverlay.style.alignItems = 'center';
             adOverlay.style.zIndex = '9999';
-            adOverlay.style.fontFamily = 'sans-serif';
+            adOverlay.style.fontFamily = 'Be Vietnam Pro, sans-serif';
             
             adOverlay.innerHTML = `
                 <h2>📺 Đang tải quảng cáo...</h2>
@@ -63,7 +63,7 @@ export const AdManager = {
             adOverlay.style.justifyContent = 'center';
             adOverlay.style.alignItems = 'center';
             adOverlay.style.zIndex = '9999';
-            adOverlay.style.fontFamily = 'sans-serif';
+            adOverlay.style.fontFamily = 'Be Vietnam Pro, sans-serif';
             
             adOverlay.innerHTML = `<h2>📺 Đang hiển thị quảng cáo giữa màn hình...</h2>`;
             document.body.appendChild(adOverlay);

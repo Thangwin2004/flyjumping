@@ -76,7 +76,7 @@ export const UIBuilder = {
             display: flex; justify-content: center; align-items: center; 
             padding: 15px 40px; outline: none;
             color: white; font-size: 24px; font-weight: 900;
-            font-family: 'Inter', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-family:'Be Vietnam Pro', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         `;
         
         btn.innerHTML = text;
@@ -129,7 +129,7 @@ export const UIBuilder = {
                 </defs>
                 <style>
                     .rev-title-text {
-                        font-family: 'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif;
+                        font-family:'Be Vietnam Pro', sans-serif;
                         font-weight: 900;
                         text-anchor: middle;
                         font-style: italic;
@@ -166,7 +166,7 @@ export const UIBuilder = {
         ], { duration: 1200, iterations: Infinity, easing: "ease-in-out" });
         
         const yesBtn = document.createElement("button");
-        yesBtn.style.cssText = "background:linear-gradient(to bottom, #B2FF59, #76FF03);border:none;border-radius:12px;padding:10px 40px;color:white;font-size:24px;font-weight:900;font-family:'Inter', sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 #64DD17, 0 8px 10px rgba(0,0,0,0.3);transition:transform 0.1s;width:100%;margin-bottom:15px;";
+        yesBtn.style.cssText = "background:linear-gradient(to bottom, #B2FF59, #76FF03);border:none;border-radius:12px;padding:10px 40px;color:white;font-size:24px;font-weight:900;font-family:'Be Vietnam Pro', sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 #64DD17, 0 8px 10px rgba(0,0,0,0.3);transition:transform 0.1s;width:100%;margin-bottom:15px;";
         
         yesBtn.innerHTML = `
             <img src="/assets/iconbtn/images.png" style="height:30px;margin-right:10px;">
@@ -190,7 +190,7 @@ export const UIBuilder = {
         
         const skipText = document.createElement("div");
         skipText.innerText = "Không, cảm ơn";
-        skipText.style.cssText = "font-family:sans-serif;font-size:16px;color:#FF80AB;text-decoration:underline;cursor:pointer;font-weight:bold;";
+        skipText.style.cssText = "font-family:'Be Vietnam Pro', sans-serif;font-size:16px;color:#FF80AB;text-decoration:underline;cursor:pointer;font-weight:bold;";
         skipText.onclick = () => {
             AudioManager.playClickSFX();
             overlay.remove();

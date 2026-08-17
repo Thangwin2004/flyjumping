@@ -55,13 +55,13 @@ export class LeaderboardModal {
 
         // Title Ribbon (Cyan) - Responsive 3D text styling
         const ribbon = document.createElement("div");
-        ribbon.style.cssText = "position:absolute; top:-25px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 0; width:70%; max-width:300px; text-align:center; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', 'Nunito', 'Inter', sans-serif; font-size:clamp(16px, 4.5vw, 22px); font-weight:900; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;";
+        ribbon.style.cssText = "position:absolute; top:-25px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 0; width:70%; max-width:300px; text-align:center; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', sans-serif; font-size:clamp(16px, 4.5vw, 22px); font-weight:900; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;";
         ribbon.innerText = "BẢNG XẾP HẠNG";
         card.appendChild(ribbon);
 
         // Header Labels - Aligned perfectly with row padding (35px = 20px container + 15px row)
         const header = document.createElement("div");
-        header.style.cssText = "display:flex; width:100%; justify-content:space-between; align-items:center; margin-top:45px; color:#00B0FF; font-family:'Be Vietnam Pro', 'Nunito', sans-serif; font-weight:900; font-size:clamp(12px, 3.5vw, 15px); padding:0 35px; box-sizing:border-box;";
+        header.style.cssText = "display:flex; width:100%; justify-content:space-between; align-items:center; margin-top:45px; color:#00B0FF; font-family:'Be Vietnam Pro', sans-serif; font-weight:900; font-size:clamp(12px, 3.5vw, 15px); padding:0 35px; box-sizing:border-box;";
         header.innerHTML = `
             <span style="width:64px; text-align:center; flex-shrink:0;">HẠNG</span>
             <span style="flex:1; text-align:left; padding-left:8px;">THÀNH VIÊN</span>
@@ -91,7 +91,7 @@ export class LeaderboardModal {
                 const isEven = index % 2 === 0;
                 const bg = isEven ? "#fffcf0" : "#f2eedb";
                 
-                row.style.cssText = `display:flex; align-items:center; background:${bg}; border:1px solid #dcd6bf; border-radius:10px; padding:8px 15px; color:#241d4f; font-family:'Be Vietnam Pro', 'Nunito', sans-serif; font-weight:bold; font-size:clamp(14px, 4vw, 17px); box-sizing:border-box;`;
+                row.style.cssText = `display:flex; align-items:center; background:${bg}; border:1px solid #dcd6bf; border-radius:10px; padding:8px 15px; color:#241d4f; font-family:'Be Vietnam Pro', sans-serif; font-weight:bold; font-size:clamp(14px, 4vw, 17px); box-sizing:border-box;`;
                 
                 let rankContent = `<span style="font-size:22px; font-weight:900; color:#241d4f;">${index + 1}</span>`;
                 if (index === 0) rankContent = `<span style="font-size:34px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.2);">🥇</span>`;
@@ -144,7 +144,7 @@ export class LeaderboardModal {
         const myHighScore = parseInt(localStorage.getItem('peanutJumpHighScore') || '0', 10);
 
         const footer = document.createElement("div");
-        footer.style.cssText = "width:calc(100% - 40px); background:#FFF8E1; border:2.5px solid #FFD54F; border-radius:12px; padding:10px 15px; display:flex; align-items:center; color:#241d4f; font-family:'Be Vietnam Pro', 'Nunito', sans-serif; font-weight:900; font-size:clamp(14px, 4vw, 17px); margin-bottom:20px; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);";
+        footer.style.cssText = "width:calc(100% - 40px); background:#FFF8E1; border:2.5px solid #FFD54F; border-radius:12px; padding:10px 15px; display:flex; align-items:center; color:#241d4f; font-family:'Be Vietnam Pro', sans-serif; font-weight:900; font-size:clamp(14px, 4vw, 17px); margin-bottom:20px; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);";
         footer.innerHTML = `
             <div style="width:64px; min-width:64px; text-align:center; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
                 <span style="font-size:26px; line-height:1;">🎖️</span>
