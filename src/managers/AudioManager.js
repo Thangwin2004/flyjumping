@@ -5,6 +5,8 @@ export const AudioManager = {
     bgm: null,
     isBgmMuted: localStorage.getItem('peanutJumpBgmMuted') === 'true',
     isSfxMuted: localStorage.getItem('peanutJumpSfxMuted') === 'true',
+    wasContextRunningBeforeFocus: false,
+    wasBgmPlayingBeforeFocus: false,
 
     init() {
         if (this.ctx) return;
@@ -255,5 +257,21 @@ export const AudioManager = {
         localStorage.setItem('peanutJumpSfxMuted', this.isSfxMuted);
         this.updateVolumes();
         return this.isSfxMuted;
+    },
+
+    async pauseForFocus() {
+        this.wasContextRunningBeforeFocus = this.ctx?.state === 'running';
+        this.wasBgmPlayingBeforeFocus = Boolean(this.bgm && !this.bgm.paused);
+        if (this.wasBgmPlayingBeforeFocus) this.bgm.pause();
+        if (this.wasContextRunningBeforeFocus) await this.ctx.suspend();
+    },
+
+    async resumeFromFocus() {
+        if (this.wasContextRunningBeforeFocus && this.ctx) await this.ctx.resume();
+        this.wasContextRunningBeforeFocus = false;
+        if (this.wasBgmPlayingBeforeFocus && this.bgm && !this.isBgmMuted) {
+            await this.bgm.play().catch(() => {});
+        }
+        this.wasBgmPlayingBeforeFocus = false;
     }
 };

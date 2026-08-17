@@ -111,6 +111,8 @@ class GameApplication {
         this.ticker = {
             callbacks: [],
             add: (fn) => this.ticker.callbacks.push(fn),
+            start: () => this.start(),
+            stop: () => this.stop(),
             remove: (fn) => {
                 this.ticker.callbacks = this.ticker.callbacks.filter(c => c !== fn);
             },
@@ -132,8 +134,18 @@ class GameApplication {
         window.addEventListener('resize', this.resize.bind(this));
         this.resize();
         
+        this.start();
+    }
+
+    start() {
+        if (this.isRunning) return;
+        this.clock.getDelta();
         this.isRunning = true;
         this.loop();
+    }
+
+    stop() {
+        this.isRunning = false;
     }
     
     loop() {
