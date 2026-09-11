@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/verify-wink-sdk.mjs",
     "build": "vite build",
     "postbuild": "node scripts/prune-unused-public-assets.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:wink-sdk": "node scripts/verify-wink-sdk.mjs"
   },
   "devDependencies": {
     "vite": "^8.1.1"

@@ -1,6 +1,7 @@
 import { AdManager } from '../managers/AdManager';
 import { gameApp } from '../core/Application';
 import { AudioManager } from '../managers/AudioManager';
+import { t } from '../managers/I18nManager';
 
 export const UIBuilder = {
     getUILayer() {
@@ -115,6 +116,7 @@ export const UIBuilder = {
             originalRemove();
         };
 
+        const titleText = t("revive.title");
         const title = document.createElement("div");
         title.style.cssText = "width: 100%; display: flex; justify-content: center; margin-bottom: 12px;";
         title.innerHTML = `
@@ -150,10 +152,10 @@ export const UIBuilder = {
                     }
                 </style>
                 <g transform="translate(0, 5)">
-                    <text x="180" y="44" font-size="28" class="rev-title-text rev-title-3d">CHƯA KẾT THÚC ĐÂU!</text>
+                    <text x="180" y="44" font-size="28" class="rev-title-text rev-title-3d">${titleText}</text>
                 </g>
                 <g>
-                    <text x="180" y="44" font-size="28" fill="url(#reviveTitleGrad)" class="rev-title-text rev-title-stroke">CHƯA KẾT THÚC ĐÂU!</text>
+                    <text x="180" y="44" font-size="28" fill="url(#reviveTitleGrad)" class="rev-title-text rev-title-stroke">${titleText}</text>
                 </g>
             </svg>
         `;
@@ -170,7 +172,7 @@ export const UIBuilder = {
         
         yesBtn.innerHTML = `
             <img src="/assets/iconbtn/images.png" style="height:30px;margin-right:10px;">
-            <span style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">CÓ</span>
+            <span style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${t("revive.yes")}</span>
         `;
         
         yesBtn.onclick = async () => {
@@ -189,7 +191,7 @@ export const UIBuilder = {
         yesBtn.onmouseleave = () => yesBtn.style.transform = "scale(1) translateY(0)";
         
         const skipText = document.createElement("div");
-        skipText.innerText = "Không, cảm ơn";
+        skipText.innerText = t("revive.no");
         skipText.style.cssText = "font-family:'Be Vietnam Pro', sans-serif;font-size:16px;color:#FF80AB;text-decoration:underline;cursor:pointer;font-weight:bold;";
         skipText.onclick = () => {
             AudioManager.playClickSFX();

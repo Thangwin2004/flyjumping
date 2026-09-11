@@ -8,6 +8,8 @@ import { waitForGameFonts } from './utils/fontLoader.js';
 import { installFocusPause } from './utils/focusPause.js';
 import { installInteractionGuard } from './utils/interactionGuard.js';
 
+import { i18n } from './managers/I18nManager';
+
 installInteractionGuard();
 
 async function bootstrap() {
@@ -43,7 +45,7 @@ async function bootstrap() {
         resumeAudio: () => AudioManager.resumeFromFocus(),
     });
     
-    // ── Wink Bridge lifecycle binding ──
+    // ── Wink SDK lifecycle binding ──
     winkGame.bindLifecycle({
         onPause: focusPause.pauseFromHost,
         onResume: focusPause.resumeFromHost,
@@ -52,7 +54,11 @@ async function bootstrap() {
     });
 
     winkGame.observe((state) => {
-        console.log('[WinkBridge] phase:', state.phase);
+        if (state.locale) {
+            i18n.setLanguage(state.locale === 'en' ? 'en' : 'vi');
+        } else {
+            document.documentElement.lang = i18n.language;
+        }
     });
     
     // Launch MainMenu

@@ -2,8 +2,16 @@ import { UIBuilder } from './UIBuilder';
 import { gameApp } from '../core/Application';
 import { AudioManager } from '../managers/AudioManager';
 import { winkGame } from '../integrations/wink/wink-adapter.js';
+import { i18n, t } from '../managers/I18nManager';
 
 function getEffectiveUser() {
+    if (winkGame && winkGame.personalBest?.displayName) {
+        return {
+            name: winkGame.personalBest.displayName,
+            avatar: "/assets/image/imagebldp/001_avatar_laclac.png"
+        };
+    }
+
     try {
         const savedUser = localStorage.getItem("google_user") || localStorage.getItem("user_info");
         if (savedUser) {
@@ -18,10 +26,7 @@ function getEffectiveUser() {
     } catch (e) {}
 
     if (winkGame && winkGame.isAuthenticated) {
-        const state = winkGame.state;
-        const userName = state?.user?.name || state?.identity?.displayName || "Thành viên";
-        const avatar = state?.user?.avatar || state?.identity?.avatarUrl || "/assets/image/imagebldp/001_avatar_laclac.png";
-        return { name: userName, avatar: avatar };
+        return { name: t("leaderboard.member"), avatar: "/assets/image/imagebldp/001_avatar_laclac.png" };
     }
 
     return null;
@@ -56,16 +61,16 @@ export class LeaderboardModal {
         // Title Ribbon (Cyan) - Responsive 3D text styling
         const ribbon = document.createElement("div");
         ribbon.style.cssText = "position:absolute; top:-25px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 0; width:70%; max-width:300px; text-align:center; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', sans-serif; font-size:clamp(16px, 4.5vw, 22px); font-weight:900; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;";
-        ribbon.innerText = "BẢNG XẾP HẠNG";
+        ribbon.innerText = t("leaderboard.title");
         card.appendChild(ribbon);
 
         // Header Labels - Aligned perfectly with row padding (35px = 20px container + 15px row)
         const header = document.createElement("div");
         header.style.cssText = "display:flex; width:100%; justify-content:space-between; align-items:center; margin-top:45px; color:#00B0FF; font-family:'Be Vietnam Pro', sans-serif; font-weight:900; font-size:clamp(12px, 3.5vw, 15px); padding:0 35px; box-sizing:border-box;";
         header.innerHTML = `
-            <span style="width:64px; text-align:center; flex-shrink:0;">HẠNG</span>
-            <span style="flex:1; text-align:left; padding-left:8px;">THÀNH VIÊN</span>
-            <span style="width:90px; text-align:right; flex-shrink:0;">ĐIỂM</span>
+            <span style="width:64px; text-align:center; flex-shrink:0;">${t("leaderboard.rank")}</span>
+            <span style="flex:1; text-align:left; padding-left:8px;">${t("leaderboard.player")}</span>
+            <span style="width:90px; text-align:right; flex-shrink:0;">${t("leaderboard.score")}</span>
         `;
         card.appendChild(header);
 
@@ -75,13 +80,14 @@ export class LeaderboardModal {
         card.appendChild(listContainer);
 
         // Initial default / fallback data
+        const isEn = i18n.language === 'en';
         const defaultPlayers = [
             { name: "Thanh Tùng", score: 9999, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
             { name: "Marth3", score: 8540, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
             { name: "Đậu Phộng", score: 7200, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
             { name: "Bơ Lạc", score: 6500, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
-            { name: "Khách_912", score: 4200, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
-            { name: "Khách_123", score: 3100, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
+            { name: isEn ? "Guest_912" : "Khách_912", score: 4200, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
+            { name: isEn ? "Guest_123" : "Khách_123", score: 3100, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
         ];
 
         const renderList = (dataList) => {
@@ -93,10 +99,11 @@ export class LeaderboardModal {
                 
                 row.style.cssText = `display:flex; align-items:center; background:${bg}; border:1px solid #dcd6bf; border-radius:10px; padding:8px 15px; color:#241d4f; font-family:'Be Vietnam Pro', sans-serif; font-weight:bold; font-size:clamp(14px, 4vw, 17px); box-sizing:border-box;`;
                 
-                let rankContent = `<span style="font-size:22px; font-weight:900; color:#241d4f;">${index + 1}</span>`;
-                if (index === 0) rankContent = `<span style="font-size:34px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.2);">🥇</span>`;
-                if (index === 1) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥈</span>`;
-                if (index === 2) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥉</span>`;
+                const rankNum = p.rank || (index + 1);
+                let rankContent = `<span style="font-size:22px; font-weight:900; color:#241d4f;">${rankNum}</span>`;
+                if (rankNum === 1) rankContent = `<span style="font-size:34px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.2);">🥇</span>`;
+                if (rankNum === 2) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥈</span>`;
+                if (rankNum === 3) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥉</span>`;
 
                 const avatarUrl = p.avatar || "/assets/image/imagebldp/001_avatar_laclac.png";
 
@@ -118,51 +125,67 @@ export class LeaderboardModal {
             });
         };
 
-        // Render initial data
-        renderList(defaultPlayers);
+        // Pinned Footer (Personal Best) elements
+        const footer = document.createElement("div");
+        footer.style.cssText = "width:calc(100% - 40px); background:#FFF8E1; border:2.5px solid #FFD54F; border-radius:12px; padding:10px 15px; display:flex; align-items:center; color:#241d4f; font-family:'Be Vietnam Pro', sans-serif; font-weight:900; font-size:clamp(14px, 4vw, 17px); margin-bottom:20px; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);";
 
-        // Fetch real API data asynchronously from Wink API if available
+        const updateFooter = (pb) => {
+            const effUser = getEffectiveUser();
+            const playerName = pb?.displayName || (effUser ? effUser.name : (winkGame?.isAuthenticated ? t("leaderboard.member") : t("leaderboard.you")));
+            const playerAvatar = effUser ? effUser.avatar : "/assets/image/imagebldp/001_avatar_laclac.png";
+            const localHighScore = parseInt(localStorage.getItem('peanutJumpHighScore') || '0', 10);
+            const myScore = pb?.score !== undefined && pb?.score !== null ? pb.score : localHighScore;
+            const rankStr = pb?.rank ? `#${pb.rank}` : (myScore > 0 ? "🎖️" : "—");
+
+            footer.innerHTML = `
+                <div style="width:64px; min-width:64px; text-align:center; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
+                    <span style="font-size:20px; font-weight:900; color:#D84315;">${rankStr}</span>
+                </div>
+                <div style="flex:1; display:flex; align-items:center; gap:8px; padding-left:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    <div style="width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid #FFC107; overflow:hidden; flex-shrink:0;">
+                        <img src="${playerAvatar}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/image/imagebldp/001_avatar_laclac.png'">
+                    </div>
+                    <span style="overflow:hidden; text-overflow:ellipsis; color:#D84315;">${playerName}</span>
+                </div>
+                <div style="width:90px; min-width:90px; text-align:right; color:#D84315; font-size:18px; font-weight:900; flex-shrink:0;">
+                    ${myScore}
+                </div>
+            `;
+        };
+
+        // Render initial state
+        renderList(defaultPlayers);
+        updateFooter(winkGame?.personalBest);
+
+        // Fetch real API data asynchronously from Wink API
         if (winkGame) {
-            winkGame.refreshLeaderboard({ limit: 10 }).then(res => {
-                if (res && Array.isArray(res.entries) && res.entries.length > 0) {
-                    const apiPlayers = res.entries.map((item, idx) => ({
-                        name: item.name || item.username || item.displayName || `Thành viên #${idx + 1}`,
+            Promise.all([
+                winkGame.refreshLeaderboard({ limit: 10 }),
+                winkGame.getPersonalBest()
+            ]).then(([lbRes, pbRes]) => {
+                if (lbRes && Array.isArray(lbRes.entries) && lbRes.entries.length > 0) {
+                    const fallbackMember = i18n.language === 'en' ? "Member" : "Thành viên";
+                    const apiPlayers = lbRes.entries.map((item, idx) => ({
+                        rank: item.rank || (idx + 1),
+                        name: item.displayName || item.name || item.username || `${fallbackMember} #${item.rank || (idx + 1)}`,
                         score: item.score || 0,
                         avatar: item.avatarUrl || item.avatar || "/assets/image/imagebldp/001_avatar_laclac.png"
                     }));
                     renderList(apiPlayers);
                 }
+                const activePb = pbRes?.me || lbRes?.me || winkGame.personalBest;
+                updateFooter(activePb);
             }).catch(() => {
                 // Keep default list on offline/mock mode
             });
         }
 
-        // Pinned Footer (Personal Best) - Aligned perfectly with rows above
-        const effUser = getEffectiveUser();
-        const playerName = effUser ? effUser.name : "Bạn (Khách)";
-        const playerAvatar = effUser ? effUser.avatar : "/assets/image/imagebldp/001_avatar_laclac.png";
-        const myHighScore = parseInt(localStorage.getItem('peanutJumpHighScore') || '0', 10);
-
-        const footer = document.createElement("div");
-        footer.style.cssText = "width:calc(100% - 40px); background:#FFF8E1; border:2.5px solid #FFD54F; border-radius:12px; padding:10px 15px; display:flex; align-items:center; color:#241d4f; font-family:'Be Vietnam Pro', sans-serif; font-weight:900; font-size:clamp(14px, 4vw, 17px); margin-bottom:20px; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);";
-        footer.innerHTML = `
-            <div style="width:64px; min-width:64px; text-align:center; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
-                <span style="font-size:26px; line-height:1;">🎖️</span>
-            </div>
-            <div style="flex:1; display:flex; align-items:center; gap:8px; padding-left:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                <div style="width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid #FFC107; overflow:hidden; flex-shrink:0;">
-                    <img src="${playerAvatar}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/assets/image/imagebldp/001_avatar_laclac.png'">
-                </div>
-                <span style="overflow:hidden; text-overflow:ellipsis; color:#D84315;">${playerName}</span>
-            </div>
-            <div style="width:90px; min-width:90px; text-align:right; color:#D84315; font-size:18px; font-weight:900; flex-shrink:0;">
-                ${myHighScore}
-            </div>
-        `;
         card.appendChild(footer);
 
         // Close Button (top right)
         const closeBtn = document.createElement("button");
+        closeBtn.className = "ui-button";
+        closeBtn.setAttribute("aria-label", t("actions.close"));
         closeBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:44px; height:44px; border-radius:50%; border:3px solid #fff; background:linear-gradient(to bottom, #FF80AB, #FF4081); color:white; font-size:20px; font-weight:bold; cursor:pointer; box-shadow:0 4px 0 #F50057; display:flex; align-items:center; justify-content:center; padding:0;";
         closeBtn.innerHTML = "✕";
         closeBtn.onclick = () => {

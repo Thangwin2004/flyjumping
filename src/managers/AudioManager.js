@@ -5,8 +5,10 @@ export const AudioManager = {
     bgm: null,
     isBgmMuted: localStorage.getItem('peanutJumpBgmMuted') === 'true',
     isSfxMuted: localStorage.getItem('peanutJumpSfxMuted') === 'true',
+    isHostMuted: false,
     wasContextRunningBeforeFocus: false,
     wasBgmPlayingBeforeFocus: false,
+    wasBgmPlayingBeforeHostMute: false,
 
     init() {
         if (this.ctx) return;
@@ -37,8 +39,8 @@ export const AudioManager = {
     updateVolumes() {
         if (!this.ctx) return;
         // Reduced BGM volume to a comfortable, gentle level
-        this.bgmGain.gain.value = this.isBgmMuted ? 0 : 0.25;
-        this.sfxGain.gain.value = this.isSfxMuted ? 0 : 0.5;
+        this.bgmGain.gain.value = this.isBgmMuted || this.isHostMuted ? 0 : 0.25;
+        this.sfxGain.gain.value = this.isSfxMuted || this.isHostMuted ? 0 : 0.5;
     },
 
     playBGM() {
@@ -259,6 +261,22 @@ export const AudioManager = {
         return this.isSfxMuted;
     },
 
+    setMuted(muted) {
+        const nextMuted = Boolean(muted);
+        if (nextMuted === this.isHostMuted) return;
+        if (nextMuted) {
+            this.wasBgmPlayingBeforeHostMute = Boolean(this.bgm && !this.bgm.paused);
+        }
+        this.isHostMuted = nextMuted;
+        this.updateVolumes();
+        if (this.isHostMuted) {
+            this.bgm?.pause();
+        } else if (!this.isBgmMuted && this.bgm && this.wasBgmPlayingBeforeHostMute) {
+            void this.bgm.play().catch(() => {});
+            this.wasBgmPlayingBeforeHostMute = false;
+        }
+    },
+
     async pauseForFocus() {
         this.wasContextRunningBeforeFocus = this.ctx?.state === 'running';
         this.wasBgmPlayingBeforeFocus = Boolean(this.bgm && !this.bgm.paused);
@@ -269,7 +287,7 @@ export const AudioManager = {
     async resumeFromFocus() {
         if (this.wasContextRunningBeforeFocus && this.ctx) await this.ctx.resume();
         this.wasContextRunningBeforeFocus = false;
-        if (this.wasBgmPlayingBeforeFocus && this.bgm && !this.isBgmMuted) {
+        if (this.wasBgmPlayingBeforeFocus && this.bgm && !this.isBgmMuted && !this.isHostMuted) {
             await this.bgm.play().catch(() => {});
         }
         this.wasBgmPlayingBeforeFocus = false;

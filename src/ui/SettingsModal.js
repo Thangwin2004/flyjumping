@@ -1,5 +1,6 @@
 import { AudioManager } from '../managers/AudioManager';
 import { UIBuilder } from './UIBuilder';
+import { i18n, t } from '../managers/I18nManager';
 
 export class SettingsModal {
     constructor(onResume, onQuit, onReplay) {
@@ -13,11 +14,11 @@ export class SettingsModal {
         overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;";
         
         const card = document.createElement('div');
-        card.style.cssText = "background:#fbfaf5;border:8px solid #40C4FF;border-radius:24px;width:260px;max-width:90%;padding:35px 20px 30px 20px;display:flex;flex-direction:column;align-items:center;box-shadow:0 15px 30px rgba(0,0,0,0.5); text-align: center; position:relative;";
+        card.style.cssText = "background:#fbfaf5;border:8px solid #40C4FF;border-radius:24px;width:280px;max-width:92%;padding:35px 20px 25px 20px;display:flex;flex-direction:column;align-items:center;box-shadow:0 15px 30px rgba(0,0,0,0.5); text-align: center; position:relative;";
         
         const ribbon = document.createElement("div");
-        ribbon.style.cssText = "position:absolute; top:-30px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 30px; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', sans-serif; font-size:22px; font-weight:900; letter-spacing:2px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2;";
-        ribbon.innerText = "CÀI ĐẶT";
+        ribbon.style.cssText = "position:absolute; top:-30px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 30px; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', sans-serif; font-size:20px; font-weight:900; letter-spacing:2px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;";
+        ribbon.innerText = t("settings.title");
         card.appendChild(ribbon);
 
         const handleResize = () => {
@@ -25,7 +26,7 @@ export class SettingsModal {
             if (!container) return;
             const cw = container.clientWidth;
             const ch = container.clientHeight;
-            const scale = Math.min(1.0, (cw - 20) / 320, (ch - 20) / 450);
+            const scale = Math.min(1.0, (cw - 20) / 320, (ch - 20) / 520);
             card.style.transform = `scale(${scale})`;
         };
         window.addEventListener("resize", handleResize);
@@ -88,7 +89,7 @@ export class SettingsModal {
 
         // --- AUDIO TOGGLES ---
         const toggleContainer = document.createElement('div');
-        toggleContainer.style.cssText = "display: flex; gap: 20px; justify-content: center; width: 100%; margin-bottom: 25px;";
+        toggleContainer.style.cssText = "display: flex; gap: 20px; justify-content: center; width: 100%; margin-bottom: 20px;";
 
         const musicSvg = `<svg viewBox="0 0 24 24" fill="white" width="36" height="36"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>`;
         const sfxSvg = `<svg viewBox="0 0 24 24" fill="white" width="36" height="36"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
@@ -109,10 +110,85 @@ export class SettingsModal {
         toggleContainer.appendChild(sfxBtn);
         card.appendChild(toggleContainer);
 
+        // --- LANGUAGE SELECTION SECTION ---
+        const langDivider = document.createElement('div');
+        langDivider.style.cssText = "width:100%; height:2px; background:#e0e0e0; border-radius: 2px; margin-bottom:12px;";
+        card.appendChild(langDivider);
+
+        const langLabel = document.createElement('div');
+        langLabel.style.cssText = "font-family:'Be Vietnam Pro', sans-serif; font-size:13px; font-weight:900; color:#0288D1; letter-spacing:1.5px; margin-bottom:10px; text-transform:uppercase;";
+        langLabel.innerText = t("settings.language");
+        card.appendChild(langLabel);
+
+        const langBtnContainer = document.createElement('div');
+        langBtnContainer.style.cssText = "display: flex; gap: 10px; justify-content: center; width: 100%; margin-bottom: 15px;";
+
+        const applyLangStyle = (btn, isActive) => {
+            if (isActive) {
+                btn.style.background = "linear-gradient(to bottom, #84FFFF, #40C4FF)";
+                btn.style.border = "3px solid #fff";
+                btn.style.boxShadow = "0 4px 0 #00B0FF, 0 6px 12px rgba(0,0,0,0.15)";
+                btn.style.color = "#ffffff";
+                btn.style.textShadow = "0 1px 3px rgba(0,0,0,0.3)";
+                btn.style.fontWeight = "900";
+            } else {
+                btn.style.background = "#ECEFF1";
+                btn.style.border = "2px solid #CFD8DC";
+                btn.style.boxShadow = "0 3px 0 #B0BEC5";
+                btn.style.color = "#546E7A";
+                btn.style.textShadow = "none";
+                btn.style.fontWeight = "700";
+            }
+        };
+
+        const createLangBtn = (langCode, labelText) => {
+            const btn = document.createElement('button');
+            btn.className = "ui-button";
+            btn.style.cssText = `
+                flex: 1;
+                max-width: 120px;
+                height: 40px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-family: 'Be Vietnam Pro', sans-serif;
+                font-size: 13px;
+                outline: none;
+                transition: transform 0.1s;
+                -webkit-tap-highlight-color: transparent;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 8px;
+            `;
+            btn.innerText = labelText;
+            applyLangStyle(btn, i18n.language === langCode);
+
+            btn.onclick = () => {
+                if (i18n.language === langCode) return;
+                AudioManager.playClickSFX();
+                i18n.setLanguage(langCode);
+                applyLangStyle(viBtn, i18n.language === 'vi');
+                applyLangStyle(enBtn, i18n.language === 'en');
+                ribbon.innerText = t("settings.title");
+                langLabel.innerText = t("settings.language");
+            };
+            btn.onmousedown = () => btn.style.transform = "scale(0.95) translateY(2px)";
+            btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
+            btn.onmouseleave = () => btn.style.transform = "scale(1) translateY(0)";
+            return btn;
+        };
+
+        const viBtn = createLangBtn('vi', "Tiếng Việt");
+        const enBtn = createLangBtn('en', "English");
+
+        langBtnContainer.appendChild(viBtn);
+        langBtnContainer.appendChild(enBtn);
+        card.appendChild(langBtnContainer);
+
         if (this.onQuit) {
             // Divider
             const divider = document.createElement('div');
-            divider.style.cssText = "width:100%; height:3px; background:#e0e0e0; border-radius: 2px; margin-bottom:20px;";
+            divider.style.cssText = "width:100%; height:2px; background:#e0e0e0; border-radius: 2px; margin-bottom:15px;";
             card.appendChild(divider);
 
             const iconBtnContainer = document.createElement('div');

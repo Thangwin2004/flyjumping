@@ -10,6 +10,7 @@ import { LandingVFX } from '../effects/LandingVFX';
 import { ConfettiVFX } from '../effects/ConfettiVFX';
 import { AudioManager } from '../managers/AudioManager';
 import { winkGame } from '../integrations/wink/wink-adapter.js';
+import { i18n, t } from '../managers/I18nManager';
 import gsap from 'gsap';
 
 export class GameScene extends THREE.Group {
@@ -53,6 +54,8 @@ export class GameScene extends THREE.Group {
         // Settings Button (In-game) - Style matched with MainMenu
         const settingsSvg = '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="#ffffff" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.49-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
         this.settingsBtn = document.createElement('button');
+        this.settingsBtn.setAttribute('aria-label', t('menu.settings'));
+        this.settingsBtn.title = t('menu.settings');
         this.settingsBtn.style.cssText = "position:absolute;top:20px;right:20px;width:50px;height:50px;border-radius:50%;border:3px solid #fff;background:linear-gradient(to bottom, #4FC3F7, #039BE5);box-shadow:0 4px 0 #0277BD, 0 4px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:100;transition:transform 0.1s;padding:0;";
         this.settingsBtn.innerHTML = settingsSvg;
         this.settingsBtn.onmousedown = () => this.settingsBtn.style.transform = "scale(0.9) translateY(4px)";
@@ -262,11 +265,11 @@ export class GameScene extends THREE.Group {
 
     checkMilestones(score) {
         const milestones = [
-            { score: 50, msg: "Khởi đầu tốt!", emoji: "🌟" },
-            { score: 100, msg: "Nhảy giỏi đấy!", emoji: "🔥" },
-            { score: 150, msg: "Nửa đường rồi!", emoji: "💪" },
-            { score: 200, msg: "Incredible!", emoji: "🏆" },
-            { score: 250, msg: "Legendary!", emoji: "👑" },
+            { score: 50, msg: t("milestone.50"), emoji: "🌟" },
+            { score: 100, msg: t("milestone.100"), emoji: "🔥" },
+            { score: 150, msg: t("milestone.150"), emoji: "💪" },
+            { score: 200, msg: t("milestone.200"), emoji: "🏆" },
+            { score: 250, msg: t("milestone.250"), emoji: "👑" },
         ];
 
         let targetMilestone = null;
@@ -280,7 +283,7 @@ export class GameScene extends THREE.Group {
         }
         // 300+ case (every 50 points)
         if (!targetMilestone && score >= 300 && score % 50 === 0) {
-            targetMilestone = { score: score, msg: "Unstoppable!", emoji: "⚡" };
+            targetMilestone = { score: score, msg: t("milestone.300"), emoji: "⚡" };
         }
 
         if (targetMilestone && this.milestoneReached !== targetMilestone.score) {
@@ -1110,6 +1113,7 @@ export class GameScene extends THREE.Group {
             { transform: "scale(1)" }, { transform: "scale(1.1) rotate(5deg)" }, { transform: "scale(1)" }, { transform: "scale(1.1) rotate(-5deg)" }, { transform: "scale(1)" }
         ], { duration: 2000, iterations: Infinity, easing: "ease-in-out" });
 
+        const titleText = t("gameover.title");
         const title = document.createElement('div');
         title.style.cssText = "width: 100%; display: flex; justify-content: center; margin-bottom: 8px; margin-top: 5px;";
         title.innerHTML = `
@@ -1147,11 +1151,11 @@ export class GameScene extends THREE.Group {
                 </style>
                 <!-- 3D Base Shadow -->
                 <g transform="translate(0, 6)">
-                    <text x="170" y="52" font-size="40" class="go-title-text go-title-3d">GAME OVER</text>
+                    <text x="170" y="52" font-size="40" class="go-title-text go-title-3d">${titleText}</text>
                 </g>
                 <!-- Foreground Text with White Stroke + Gradient Fill -->
                 <g>
-                    <text x="170" y="52" font-size="40" fill="url(#gameOverGrad)" class="go-title-text go-title-stroke">GAME OVER</text>
+                    <text x="170" y="52" font-size="40" fill="url(#gameOverGrad)" class="go-title-text go-title-stroke">${titleText}</text>
                 </g>
             </svg>
         `;
@@ -1215,6 +1219,7 @@ export class GameScene extends THREE.Group {
             const menu = new MainMenu();
             menu.show();
         }, '#4FC3F7', '#039BE5', '#0277BD');
+        homeBtn.setAttribute('aria-label', t('actions.home'));
 
         const replayBtn = createNavBtn(svgs['replay'], () => {
             overlay.remove();
@@ -1223,6 +1228,7 @@ export class GameScene extends THREE.Group {
             gameApp.stage.add(scene);
             scene.start();
         }, '#FFF176', '#FBC02D', '#F57F17');
+        replayBtn.setAttribute('aria-label', t('actions.replay'));
 
         const doubleBtn = createNavBtn(svgs['ad'], async () => {
             doubleBtn.disabled = true;
@@ -1237,6 +1243,7 @@ export class GameScene extends THREE.Group {
                 doubleBtn.style.opacity = '1';
             }
         }, '#FF7043', '#F4511E', '#D84315');
+        doubleBtn.setAttribute('aria-label', t('actions.double'));
 
         btnContainer.appendChild(homeBtn);
         btnContainer.appendChild(replayBtn);

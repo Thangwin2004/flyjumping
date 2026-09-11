@@ -4,6 +4,7 @@ import { GameScene } from '../scenes/GameScene';
 import { gameApp } from '../core/Application';
 import { LeaderboardModal } from './LeaderboardModal';
 import { SettingsModal } from './SettingsModal';
+import { i18n, t } from '../managers/I18nManager';
 
 export class MainMenu {
     constructor() {
@@ -17,11 +18,25 @@ export class MainMenu {
         this.container.style.position = "absolute";
         this.container.style.width = "100%";
         this.container.style.height = "100%";
+        this.isShowing = false;
+
+        i18n.subscribe(() => {
+            if (this.isShowing) {
+                this.show();
+            }
+        });
     }
 
     show() {
         UIBuilder.clearUI();
         this.container.innerHTML = ''; // clear
+        this.isShowing = true;
+
+        const isEn = i18n.language === 'en';
+        const line1Text = t("menu.title.line1");
+        const line2Text = t("menu.title.line2");
+        const line1Size = isEn ? "44" : "52";
+        const line2Size = isEn ? "52" : "56";
 
         // Title - Vibrant 3D Cartoon Bubble SVG Style (Guarantees no accent clipping & rich gold/orange gradient)
         const titleContainer = document.createElement('div');
@@ -39,14 +54,14 @@ export class MainMenu {
         titleContainer.innerHTML = `
             <svg viewBox="0 0 450 170" style="width: 88%; max-width: 440px; filter: drop-shadow(0px 10px 18px rgba(0,0,0,0.4)); transform: rotate(-2deg); overflow: visible;">
                 <defs>
-                    <!-- Vibrant Gold to Orange Gradient for Line 1 "RỒNG BÉO" -->
+                    <!-- Vibrant Gold to Orange Gradient for Line 1 -->
                     <linearGradient id="titleGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stop-color="#FFF9C4" />
                         <stop offset="30%" stop-color="#FDD835" />
                         <stop offset="70%" stop-color="#FB8C00" />
                         <stop offset="100%" stop-color="#E65100" />
                     </linearGradient>
-                    <!-- Rich Bright Orange Gradient for Line 2 "TẬP BAY" -->
+                    <!-- Rich Bright Orange Gradient for Line 2 -->
                     <linearGradient id="titleGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stop-color="#FFE082" />
                         <stop offset="30%" stop-color="#FF9800" />
@@ -78,21 +93,23 @@ export class MainMenu {
                 </style>
                 <!-- 3D Shadow layer (Offset down) -->
                 <g transform="translate(0, 9)">
-                    <text x="225" y="65" font-size="52" class="title-text title-3d">RỒNG BÉO</text>
-                    <text x="225" y="135" font-size="56" class="title-text title-3d">TẬP BAY</text>
+                    <text x="225" y="65" font-size="${line1Size}" class="title-text title-3d">${line1Text}</text>
+                    <text x="225" y="135" font-size="${line2Size}" class="title-text title-3d">${line2Text}</text>
                 </g>
                 <!-- Main Foreground Text with White Border & Gradient Fill -->
                 <g>
-                    <text x="225" y="65" font-size="52" fill="url(#titleGrad1)" class="title-text title-stroke">RỒNG BÉO</text>
-                    <text x="225" y="135" font-size="56" fill="url(#titleGrad2)" class="title-text title-stroke">TẬP BAY</text>
+                    <text x="225" y="65" font-size="${line1Size}" fill="url(#titleGrad1)" class="title-text title-stroke">${line1Text}</text>
+                    <text x="225" y="135" font-size="${line2Size}" fill="url(#titleGrad2)" class="title-text title-stroke">${line2Text}</text>
                 </g>
             </svg>
         `;
         this.container.appendChild(titleContainer);
 
-        const createNavBtn = (iconSvg, size, onClick, colorTop, colorBot, colorShadow) => {
+        const createNavBtn = (iconSvg, size, onClick, colorTop, colorBot, colorShadow, ariaLabel) => {
             const btn = document.createElement("button");
             btn.className = "ui-button";
+            btn.setAttribute("aria-label", ariaLabel);
+            btn.title = ariaLabel;
             btn.style.cssText = `
                 width: ${size}px; height: ${size}px; 
                 border-radius: 50%; 
@@ -121,7 +138,7 @@ export class MainMenu {
         const playBtn = createNavBtn(playSvg, 96, () => {
             AudioManager.playBGM();
             this.startGame();
-        }, "#FF7043", "#F4511E", "#D84315");
+        }, "#FF7043", "#F4511E", "#D84315", t("menu.play"));
         playBtn.style.marginBottom = "30px";
         
         // Secondary Buttons Container
@@ -132,14 +149,14 @@ export class MainMenu {
         const lbSvg = '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>';
         const lbBtn = createNavBtn(lbSvg, 64, () => {
             this.showLeaderboard();
-        }, "#FFF176", "#FBC02D", "#F57F17");
+        }, "#FFF176", "#FBC02D", "#F57F17", t("menu.leaderboard"));
         
         // Settings Button (Blue Palette)
         const settingsSvg = '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.49-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
         const settingsBtn = createNavBtn(settingsSvg, 64, () => {
             const modal = new SettingsModal();
             modal.show();
-        }, "#4FC3F7", "#039BE5", "#0277BD");
+        }, "#4FC3F7", "#039BE5", "#0277BD", t("menu.settings"));
 
         subContainer.appendChild(lbBtn);
         subContainer.appendChild(settingsBtn);
@@ -151,6 +168,7 @@ export class MainMenu {
     }
 
     startGame() {
+        this.isShowing = false;
         UIBuilder.clearUI();
         
         // Start Game Scene
