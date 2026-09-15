@@ -1162,8 +1162,8 @@ export class GameScene extends THREE.Group {
 
         const scoreText = document.createElement('div');
         scoreText.style.cssText = "font-size: 58px; font-weight: 900; font-family:'Be Vietnam Pro', sans-serif; margin: 10px 0 20px 0; letter-spacing: 2px; text-align: center;";
-        scoreText.innerHTML = `
-            <span style="
+        const renderScoreMarkup = (val) => `
+            <span class="score-display-num" style="
                 background: linear-gradient(to bottom, #FFF59D 10%, #FFB300 50%, #E65100 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -1175,8 +1175,10 @@ export class GameScene extends THREE.Group {
                         drop-shadow(0px 8px 12px rgba(0,0,0,0.4));
                 display: inline-block;
                 padding: 4px 12px;
-            ">${this.score}</span>
+                transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            ">${val}</span>
         `;
+        scoreText.innerHTML = renderScoreMarkup(this.score);
 
         const btnContainer = document.createElement('div');
         btnContainer.style.cssText = "display:flex; justify-content:center; gap:15px; margin-top:10px;";
@@ -1236,8 +1238,42 @@ export class GameScene extends THREE.Group {
             const success = await AdManager.showRewardedVideo();
             if (success) {
                 this.score *= 2;
-                scoreText.innerText = `${this.score}`;
-                doubleBtn.style.display = 'none';
+                scoreText.innerHTML = renderScoreMarkup(this.score);
+
+                // Update high score in storage
+                const currentBest = parseInt(localStorage.getItem('peanutJumpHighScore') || '0', 10);
+                if (this.score > currentBest) {
+                    localStorage.setItem('peanutJumpHighScore', this.score.toString());
+                }
+
+                // Update Wink score if available
+                if (this._winkRound && winkGame.canSubmitScore) {
+                    winkGame.submitFinalScore({
+                        score: this.score,
+                        playTime: Math.round((Date.now() - this._winkRound.startedAtMs) / 1000),
+                        gameMode: 'classic',
+                    }).catch(() => {});
+                }
+
+                // Play celebratory milestone sound
+                AudioManager.playMilestoneSFX();
+
+                // Punchy bounce animation on the score text
+                const scoreSpan = scoreText.querySelector('.score-display-num');
+                if (scoreSpan) {
+                    scoreSpan.animate([
+                        { transform: 'scale(1)' },
+                        { transform: 'scale(1.4)' },
+                        { transform: 'scale(1)' }
+                    ], { duration: 400, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
+                }
+
+                // Smoothly disable and gray out x2 button so the 3-button layout stays completely stable
+                doubleBtn.style.pointerEvents = 'none';
+                doubleBtn.style.opacity = '0.35';
+                doubleBtn.style.filter = 'grayscale(1)';
+                doubleBtn.style.cursor = 'default';
+                doubleBtn.style.transform = 'none';
             } else {
                 doubleBtn.disabled = false;
                 doubleBtn.style.opacity = '1';
