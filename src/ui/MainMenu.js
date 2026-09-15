@@ -22,16 +22,23 @@ export class MainMenu {
 
         i18n.subscribe(() => {
             if (this.isShowing) {
-                this.show();
+                this.renderMenu();
             }
         });
     }
 
     show() {
         UIBuilder.clearUI();
-        this.container.innerHTML = ''; // clear
         this.isShowing = true;
+        const uiLayer = UIBuilder.getUILayer();
+        if (uiLayer && this.container.parentElement !== uiLayer) {
+            uiLayer.appendChild(this.container);
+        }
+        this.renderMenu();
+    }
 
+    renderMenu() {
+        this.container.innerHTML = ''; // clear only menu contents, preserving open modals
         const isEn = i18n.language === 'en';
         const line1Text = t("menu.title.line1");
         const line2Text = t("menu.title.line2");
@@ -164,7 +171,10 @@ export class MainMenu {
         this.container.appendChild(playBtn);
         this.container.appendChild(subContainer);
 
-        UIBuilder.getUILayer().appendChild(this.container);
+        const uiLayer = UIBuilder.getUILayer();
+        if (uiLayer && this.container.parentElement !== uiLayer) {
+            uiLayer.appendChild(this.container);
+        }
     }
 
     startGame() {
