@@ -55,7 +55,8 @@ async function bootstrap() {
 
     winkGame.observe((state) => {
         if (state.locale) {
-            i18n.setLanguage(state.locale === 'en' ? 'en' : 'vi');
+            const isVi = state.locale.toLowerCase().startsWith('vi');
+            i18n.setLanguage(isVi ? 'vi' : 'en');
         } else {
             document.documentElement.lang = i18n.language;
         }

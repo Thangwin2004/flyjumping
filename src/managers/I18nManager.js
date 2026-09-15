@@ -40,6 +40,12 @@ export const messages = {
     "milestone.200": "Incredible!",
     "milestone.250": "Legendary!",
     "milestone.300": "Unstoppable!",
+
+    "ad.loading": "Loading advertisement...",
+    "ad.prompt": "Please watch until the end to claim your reward!",
+    "ad.thanks": "Thank you for watching!",
+    "ad.unlocked": "Reward has been unlocked.",
+    "ad.interstitial": "Displaying advertisement...",
   },
   vi: {
     "document.title": "Rồng Béo Tập Bay",
@@ -80,12 +86,18 @@ export const messages = {
     "milestone.200": "Incredible!",
     "milestone.250": "Legendary!",
     "milestone.300": "Unstoppable!",
+
+    "ad.loading": "Đang tải quảng cáo...",
+    "ad.prompt": "Vui lòng xem hết để nhận phần thưởng!",
+    "ad.thanks": "Cảm ơn bạn đã xem!",
+    "ad.unlocked": "Phần thưởng đã được mở khóa.",
+    "ad.interstitial": "Đang hiển thị quảng cáo giữa màn hình...",
   },
 };
 
 export class I18nManager {
   constructor() {
-    this.language = "vi";
+    this.language = "en";
     this.listeners = new Set();
     try {
       const saved = globalThis.localStorage?.getItem(STORAGE_KEY);
@@ -125,7 +137,7 @@ export class I18nManager {
   }
 
   t(key, variables = {}) {
-    const langObj = messages[this.language] || messages.vi;
+    const langObj = messages[this.language] || messages.en;
     const template = langObj[key] ?? messages.en?.[key] ?? key;
     return template.replace(
       /\{(\w+)\}/g,

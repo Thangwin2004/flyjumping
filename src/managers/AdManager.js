@@ -1,3 +1,5 @@
+import { t } from './I18nManager';
+
 export const AdManager = {
     showRewardedVideo: () => {
         return new Promise((resolve) => {
@@ -20,8 +22,8 @@ export const AdManager = {
             adOverlay.style.fontFamily = 'Be Vietnam Pro, sans-serif';
             
             adOverlay.innerHTML = `
-                <h2>📺 Đang tải quảng cáo...</h2>
-                <p>Vui lòng xem hết để nhận phần thưởng!</p>
+                <h2>📺 ${t("ad.loading")}</h2>
+                <p>${t("ad.prompt")}</p>
                 <div id="ad-timer" style="font-size: 30px; font-weight: bold; margin-top: 20px;">2</div>
             `;
             
@@ -31,15 +33,18 @@ export const AdManager = {
             const interval = setInterval(() => {
                 time--;
                 if (time > 0) {
-                    document.getElementById('ad-timer').innerText = time;
+                    const timerEl = document.getElementById('ad-timer');
+                    if (timerEl) timerEl.innerText = time;
                 } else {
                     clearInterval(interval);
                     adOverlay.innerHTML = `
-                        <h2>🎉 Cảm ơn bạn đã xem!</h2>
-                        <p>Phần thưởng đã được mở khóa.</p>
+                        <h2>🎉 ${t("ad.thanks")}</h2>
+                        <p>${t("ad.unlocked")}</p>
                     `;
                     setTimeout(() => {
-                        document.body.removeChild(adOverlay);
+                        if (adOverlay.parentNode) {
+                            document.body.removeChild(adOverlay);
+                        }
                         resolve(true);
                     }, 1000);
                 }
@@ -65,11 +70,13 @@ export const AdManager = {
             adOverlay.style.zIndex = '9999';
             adOverlay.style.fontFamily = 'Be Vietnam Pro, sans-serif';
             
-            adOverlay.innerHTML = `<h2>📺 Đang hiển thị quảng cáo giữa màn hình...</h2>`;
+            adOverlay.innerHTML = `<h2>📺 ${t("ad.interstitial")}</h2>`;
             document.body.appendChild(adOverlay);
             
             setTimeout(() => {
-                document.body.removeChild(adOverlay);
+                if (adOverlay.parentNode) {
+                    document.body.removeChild(adOverlay);
+                }
                 resolve(true);
             }, 1500);
         });
