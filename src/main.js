@@ -53,13 +53,8 @@ async function bootstrap() {
         onUnmute: () => AudioManager.setMuted(false),
     });
 
-    winkGame.observe((state) => {
-        if (state.locale) {
-            const isVi = state.locale.toLowerCase().startsWith('vi');
-            i18n.setLanguage(isVi ? 'vi' : 'en');
-        } else {
-            document.documentElement.lang = i18n.language;
-        }
+    winkGame.observe(() => {
+        document.documentElement.lang = i18n.language;
     });
     
     // Launch MainMenu
