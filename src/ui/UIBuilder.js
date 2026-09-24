@@ -132,30 +132,18 @@ export const UIBuilder = {
                 <style>
                     .rev-title-text {
                         font-family:'Be Vietnam Pro', sans-serif;
-                        font-weight: 900;
+                        font-weight: 800;
                         text-anchor: middle;
-                        font-style: italic;
-                    }
-                    .rev-title-stroke {
-                        stroke: #FFFFFF;
-                        stroke-width: 10px;
-                        stroke-linejoin: round;
-                        stroke-linecap: round;
-                        paint-order: stroke fill;
-                    }
-                    .rev-title-3d {
-                        fill: #013766;
-                        stroke: #013766;
-                        stroke-width: 10px;
-                        stroke-linejoin: round;
-                        stroke-linecap: round;
+                        letter-spacing: 1.5px;
                     }
                 </style>
-                <g transform="translate(0, 5)">
-                    <text x="180" y="44" font-size="28" class="rev-title-text rev-title-3d">${titleText}</text>
+                <!-- 3D Shadow layer (Crisp 3px offset) -->
+                <g transform="translate(0, 3)">
+                    <text x="180" y="44" font-size="28" fill="#013766" stroke="#013766" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke fill" class="rev-title-text">${titleText}</text>
                 </g>
+                <!-- Foreground Text -->
                 <g>
-                    <text x="180" y="44" font-size="28" fill="url(#reviveTitleGrad)" class="rev-title-text rev-title-stroke">${titleText}</text>
+                    <text x="180" y="44" font-size="28" fill="url(#reviveTitleGrad)" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill" class="rev-title-text">${titleText}</text>
                 </g>
             </svg>
         `;

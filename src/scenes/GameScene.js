@@ -309,30 +309,18 @@ export class GameScene extends THREE.Group {
                 <style>
                     .ms-text {
                         font-family:'Be Vietnam Pro', sans-serif;
-                        font-weight: 900;
+                        font-weight: 800;
                         text-anchor: middle;
-                        font-style: italic;
-                    }
-                    .ms-stroke {
-                        stroke: #FFFFFF;
-                        stroke-width: 12px;
-                        stroke-linejoin: round;
-                        stroke-linecap: round;
-                        paint-order: stroke fill;
-                    }
-                    .ms-3d {
-                        fill: #8D1400;
-                        stroke: #8D1400;
-                        stroke-width: 12px;
-                        stroke-linejoin: round;
-                        stroke-linecap: round;
+                        letter-spacing: 2px;
                     }
                 </style>
-                <g transform="translate(0, 7)">
-                    <text x="210" y="55" font-size="42" class="ms-text ms-3d">${msg}</text>
+                <!-- 3D Shadow layer (Crisp 3px offset) -->
+                <g transform="translate(0, 3)">
+                    <text x="210" y="55" font-size="38" fill="#8D1400" stroke="#8D1400" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke fill" class="ms-text">${msg}</text>
                 </g>
+                <!-- Foreground Text -->
                 <g>
-                    <text x="210" y="55" font-size="42" fill="url(#msGrad)" class="ms-text ms-stroke">${msg}</text>
+                    <text x="210" y="55" font-size="38" fill="url(#msGrad)" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill" class="ms-text">${msg}</text>
                 </g>
             </svg>
         `;
@@ -1129,33 +1117,18 @@ export class GameScene extends THREE.Group {
                 <style>
                     .go-title-text {
                         font-family:'Be Vietnam Pro', sans-serif;
-                        font-weight: 900;
+                        font-weight: 800;
                         text-anchor: middle;
-                        font-style: italic;
-                        letter-spacing: 3px;
-                    }
-                    .go-title-stroke {
-                        stroke: #FFFFFF;
-                        stroke-width: 11px;
-                        stroke-linejoin: round;
-                        stroke-linecap: round;
-                        paint-order: stroke fill;
-                    }
-                    .go-title-3d {
-                        fill: #013766;
-                        stroke: #013766;
-                        stroke-width: 11px;
-                        stroke-linejoin: round;
-                        stroke-linecap: round;
+                        letter-spacing: 2px;
                     }
                 </style>
-                <!-- 3D Base Shadow -->
-                <g transform="translate(0, 6)">
-                    <text x="170" y="52" font-size="40" class="go-title-text go-title-3d">${titleText}</text>
+                <!-- 3D Base Shadow (Crisp 3px offset) -->
+                <g transform="translate(0, 3)">
+                    <text x="170" y="52" font-size="38" fill="#013766" stroke="#013766" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke fill" class="go-title-text">${titleText}</text>
                 </g>
                 <!-- Foreground Text with White Stroke + Gradient Fill -->
                 <g>
-                    <text x="170" y="52" font-size="40" fill="url(#gameOverGrad)" class="go-title-text go-title-stroke">${titleText}</text>
+                    <text x="170" y="52" font-size="38" fill="url(#gameOverGrad)" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill" class="go-title-text">${titleText}</text>
                 </g>
             </svg>
         `;
