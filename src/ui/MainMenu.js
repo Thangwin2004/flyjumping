@@ -63,19 +63,19 @@ export class MainMenu {
         titleContainer.innerHTML = `
             <svg viewBox="0 0 480 175" style="width: 90%; max-width: 440px; filter: drop-shadow(0px 10px 18px rgba(0,0,0,0.38)); transform: rotate(-2deg); overflow: visible;">
                 <defs>
-                    <!-- Vibrant Gold to Radiant Orange Gradient for Line 1 -->
+                    <!-- Vibrant Gold to Radiant Orange Gradient for Line 1 (Exact Original) -->
                     <linearGradient id="titleGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#FFFFFF" />
-                        <stop offset="25%" stop-color="#FFF176" />
-                        <stop offset="65%" stop-color="#FF9800" />
+                        <stop offset="0%" stop-color="#FFF9C4" />
+                        <stop offset="30%" stop-color="#FDD835" />
+                        <stop offset="70%" stop-color="#FB8C00" />
                         <stop offset="100%" stop-color="#E65100" />
                     </linearGradient>
-                    <!-- Rich Warm Orange to Coral Gradient for Line 2 -->
+                    <!-- Rich Warm Orange to Coral Gradient for Line 2 (Exact Original) -->
                     <linearGradient id="titleGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#FFF8E1" />
-                        <stop offset="30%" stop-color="#FFE082" />
-                        <stop offset="70%" stop-color="#FF7043" />
-                        <stop offset="100%" stop-color="#D84315" />
+                        <stop offset="0%" stop-color="#FFE082" />
+                        <stop offset="30%" stop-color="#FF9800" />
+                        <stop offset="75%" stop-color="#F4511E" />
+                        <stop offset="100%" stop-color="#BF360C" />
                     </linearGradient>
                 </defs>
                 <style>
@@ -89,23 +89,23 @@ export class MainMenu {
                 </style>
                 <!-- 1. Deep 3D Shadow Layer (8px down) -->
                 <g transform="translate(0, 8)">
-                    <text x="240" y="62" font-size="${line1Size}" fill="#680D00" stroke="#680D00" stroke-width="10" stroke-linejoin="round" class="title-text">${line1Text}</text>
-                    <text x="240" y="132" font-size="${line2Size}" fill="#680D00" stroke="#680D00" stroke-width="10" stroke-linejoin="round" class="title-text">${line2Text}</text>
+                    <text x="240" y="62" font-size="${line1Size}" fill="#8D1400" stroke="#8D1400" stroke-width="10" stroke-linejoin="round" class="title-text">${line1Text}</text>
+                    <text x="240" y="132" font-size="${line2Size}" fill="#8D1400" stroke="#8D1400" stroke-width="10" stroke-linejoin="round" class="title-text">${line2Text}</text>
                 </g>
                 <!-- 2. Mid 3D Transition Bevel (4px down) -->
                 <g transform="translate(0, 4)">
-                    <text x="240" y="62" font-size="${line1Size}" fill="#991B00" stroke="#991B00" stroke-width="9" stroke-linejoin="round" class="title-text">${line1Text}</text>
-                    <text x="240" y="132" font-size="${line2Size}" fill="#991B00" stroke="#991B00" stroke-width="9" stroke-linejoin="round" class="title-text">${line2Text}</text>
+                    <text x="240" y="62" font-size="${line1Size}" fill="#BF360C" stroke="#BF360C" stroke-width="9" stroke-linejoin="round" class="title-text">${line1Text}</text>
+                    <text x="240" y="132" font-size="${line2Size}" fill="#BF360C" stroke="#BF360C" stroke-width="9" stroke-linejoin="round" class="title-text">${line2Text}</text>
                 </g>
                 <!-- 3. Thick Pure White Cartoon Sticker Outline (0px) -->
                 <g>
                     <text x="240" y="62" font-size="${line1Size}" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" class="title-text">${line1Text}</text>
                     <text x="240" y="132" font-size="${line2Size}" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" class="title-text">${line2Text}</text>
                 </g>
-                <!-- 4. Crisp Gradient Face with Subtle Inset Stroke Definition (0px) -->
+                <!-- 4. Pure Sunny Gradient Face (0px, pure uncompromised original colors) -->
                 <g>
-                    <text x="240" y="62" font-size="${line1Size}" fill="url(#titleGrad1)" stroke="#B23500" stroke-width="1.5" stroke-linejoin="round" paint-order="stroke fill" class="title-text">${line1Text}</text>
-                    <text x="240" y="132" font-size="${line2Size}" fill="url(#titleGrad2)" stroke="#7A1800" stroke-width="1.5" stroke-linejoin="round" paint-order="stroke fill" class="title-text">${line2Text}</text>
+                    <text x="240" y="62" font-size="${line1Size}" fill="url(#titleGrad1)" stroke="none" class="title-text">${line1Text}</text>
+                    <text x="240" y="132" font-size="${line2Size}" fill="url(#titleGrad2)" stroke="none" class="title-text">${line2Text}</text>
                 </g>
             </svg>
         `;
