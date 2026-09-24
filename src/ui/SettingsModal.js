@@ -1,6 +1,7 @@
 import { AudioManager } from '../managers/AudioManager';
 import { UIBuilder } from './UIBuilder';
 import { i18n, t } from '../managers/I18nManager';
+import { winkGame } from '../integrations/wink/wink-adapter.js';
 
 export class SettingsModal {
     constructor(onResume, onQuit, onReplay) {
@@ -21,6 +22,8 @@ export class SettingsModal {
         ribbon.innerText = t("settings.title");
         card.appendChild(ribbon);
 
+        let unsubscribeLocale = null;
+
         const handleResize = () => {
             const container = UIBuilder.getUILayer();
             if (!container) return;
@@ -35,6 +38,7 @@ export class SettingsModal {
         const originalRemove = overlay.remove.bind(overlay);
         overlay.remove = () => {
             window.removeEventListener("resize", handleResize);
+            if (unsubscribeLocale) unsubscribeLocale();
             originalRemove();
         };
         
@@ -166,11 +170,11 @@ export class SettingsModal {
             btn.onclick = () => {
                 if (i18n.language === langCode) return;
                 AudioManager.playClickSFX();
-                i18n.setLanguage(langCode);
-                applyLangStyle(viBtn, i18n.language === 'vi');
-                applyLangStyle(enBtn, i18n.language === 'en');
-                ribbon.innerText = t("settings.title");
-                langLabel.innerText = t("settings.language");
+                if (winkGame && typeof winkGame.setLocale === 'function') {
+                    winkGame.setLocale(langCode);
+                } else {
+                    i18n.setLanguage(langCode);
+                }
             };
             btn.onmousedown = () => btn.style.transform = "scale(0.95) translateY(2px)";
             btn.onmouseup = () => btn.style.transform = "scale(1) translateY(0)";
@@ -184,6 +188,17 @@ export class SettingsModal {
         langBtnContainer.appendChild(viBtn);
         langBtnContainer.appendChild(enBtn);
         card.appendChild(langBtnContainer);
+
+        const updateLocaleUI = () => {
+            ribbon.innerText = t("settings.title");
+            langLabel.innerText = t("settings.language");
+            applyLangStyle(viBtn, i18n.language === 'vi');
+            applyLangStyle(enBtn, i18n.language === 'en');
+        };
+
+        unsubscribeLocale = i18n.subscribe(() => {
+            updateLocaleUI();
+        });
 
         if (this.onQuit) {
             // Divider

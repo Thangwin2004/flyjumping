@@ -22,6 +22,9 @@ async function bootstrap() {
         "700 1em 'Be Vietnam Pro'",
         "800 1em 'Be Vietnam Pro'",
         "900 1em 'Be Vietnam Pro'",
+        "italic 700 1em 'Be Vietnam Pro'",
+        "italic 800 1em 'Be Vietnam Pro'",
+        "italic 900 1em 'Be Vietnam Pro'",
         "700 1em 'Baloo 2'",
         "800 1em 'Baloo 2'",
     ]);
@@ -51,9 +54,13 @@ async function bootstrap() {
         onResume: focusPause.resumeFromHost,
         onMute: () => AudioManager.setMuted(true),
         onUnmute: () => AudioManager.setMuted(false),
+        onLocale: (locale) => i18n.setLanguage(locale),
     });
 
-    winkGame.observe(() => {
+    winkGame.observe((state) => {
+        if (state?.locale) {
+            i18n.setLanguage(state.locale);
+        }
         document.documentElement.lang = i18n.language;
     });
     

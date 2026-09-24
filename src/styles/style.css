@@ -8,7 +8,9 @@ body {
     align-items: center;
     width: 100vw;
     height: 100vh;
-    font-family:'Be Vietnam Pro', sans-serif;
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     touch-action: none; /* Prevent scroll on drag */
 }
 

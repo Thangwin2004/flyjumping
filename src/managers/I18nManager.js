@@ -97,14 +97,12 @@ export const messages = {
 
 export class I18nManager {
   constructor() {
-    this.hasLocalOverride = false;
     this.language = "en";
     this.listeners = new Set();
     try {
       const saved = globalThis.localStorage?.getItem(STORAGE_KEY);
-      if (saved === "en" || saved === "vi") {
-        this.language = saved;
-        this.hasLocalOverride = true;
+      if (saved) {
+        this.language = String(saved).toLowerCase().startsWith("vi") ? "vi" : "en";
       }
     } catch {
       /* Storage can be unavailable in embedded games. */
@@ -119,19 +117,18 @@ export class I18nManager {
   }
 
   setLanguage(language) {
-    if (language !== "en" && language !== "vi") return false;
-    this.hasLocalOverride = true;
+    const normalized = String(language || "").toLowerCase().startsWith("vi") ? "vi" : "en";
     try {
-      globalThis.localStorage?.setItem(STORAGE_KEY, language);
+      globalThis.localStorage?.setItem(STORAGE_KEY, normalized);
     } catch {
       /* Keep the session choice. */
     }
-    if (this.language === language) return false;
-    this.language = language;
+    if (this.language === normalized) return false;
+    this.language = normalized;
     this.applyDocumentLanguage();
     for (const listener of this.listeners) {
       try {
-        listener(language);
+        listener(normalized);
       } catch (err) {
         console.error(err);
       }

@@ -44,6 +44,7 @@ export class MainMenu {
         const line2Text = t("menu.title.line2");
         const line1Size = isEn ? "44" : "52";
         const line2Size = isEn ? "52" : "56";
+        const titleFontFamily = isEn ? "'Baloo 2', 'Be Vietnam Pro', sans-serif" : "'Be Vietnam Pro', sans-serif";
 
         // Title - Vibrant 3D Cartoon Bubble SVG Style (Guarantees no accent clipping & rich gold/orange gradient)
         const titleContainer = document.createElement('div');
@@ -78,7 +79,7 @@ export class MainMenu {
                 </defs>
                 <style>
                     .title-text {
-                        font-family: 'Baloo 2', 'Be Vietnam Pro', sans-serif;
+                        font-family: ${titleFontFamily};
                         font-weight: 900;
                         text-anchor: middle;
                         font-style: italic;
