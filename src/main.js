@@ -27,6 +27,7 @@ async function bootstrap() {
         "italic 900 1em 'Be Vietnam Pro'",
         "700 1em 'Baloo 2'",
         "800 1em 'Baloo 2'",
+        "400 1em 'Lilita One'",
     ]);
     
     // 1. Initialize Pixi Application

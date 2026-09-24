@@ -53,8 +53,8 @@ export async function waitForGameFonts(fontRequests, timeoutMs = 4500) {
     );
 
     const loadPromises = fontRequests.map(async (font) => {
-      const isBaloo = font.includes("Baloo");
-      const sample = isBaloo ? LATIN_FONT_SAMPLE : VIETNAMESE_FONT_SAMPLE;
+      const isLatinOnly = font.includes("Baloo") || font.includes("Lilita");
+      const sample = isLatinOnly ? LATIN_FONT_SAMPLE : VIETNAMESE_FONT_SAMPLE;
       try {
         const faces = await document.fonts.load(font, sample);
         return faces.length > 0;

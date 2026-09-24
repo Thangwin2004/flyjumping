@@ -42,9 +42,10 @@ export class MainMenu {
         const isEn = i18n.language === 'en';
         const line1Text = t("menu.title.line1");
         const line2Text = t("menu.title.line2");
-        const line1Size = isEn ? "42" : "50";
-        const line2Size = isEn ? "48" : "54";
-        const titleFontFamily = isEn ? "'Baloo 2', 'Be Vietnam Pro', sans-serif" : "'Be Vietnam Pro', sans-serif";
+        const line1Size = isEn ? "46" : "50";
+        const line2Size = isEn ? "52" : "56";
+        const titleFontFamily = isEn ? "'Lilita One', 'Baloo 2', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif";
+        const titleFontWeight = isEn ? "400" : "900";
 
         // Title - Vibrant 3D Cartoon Bubble SVG Style (Stunning 4-layer 3D extrusion, thick white sticker border, unchoked gradient face)
         const titleContainer = document.createElement('div');
@@ -64,23 +65,24 @@ export class MainMenu {
                 <defs>
                     <!-- Vibrant Gold to Radiant Orange Gradient for Line 1 -->
                     <linearGradient id="titleGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#FFF9C4" />
-                        <stop offset="25%" stop-color="#FDD835" />
-                        <stop offset="65%" stop-color="#FB8C00" />
+                        <stop offset="0%" stop-color="#FFFFFF" />
+                        <stop offset="25%" stop-color="#FFF176" />
+                        <stop offset="65%" stop-color="#FF9800" />
                         <stop offset="100%" stop-color="#E65100" />
                     </linearGradient>
                     <!-- Rich Warm Orange to Coral Gradient for Line 2 -->
                     <linearGradient id="titleGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#FFE082" />
-                        <stop offset="30%" stop-color="#FF9800" />
-                        <stop offset="70%" stop-color="#F4511E" />
-                        <stop offset="100%" stop-color="#BF360C" />
+                        <stop offset="0%" stop-color="#FFF8E1" />
+                        <stop offset="30%" stop-color="#FFE082" />
+                        <stop offset="70%" stop-color="#FF7043" />
+                        <stop offset="100%" stop-color="#D84315" />
                     </linearGradient>
                 </defs>
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Be+Vietnam+Pro:ital,wght@0,900;1,900&display=swap');
                     .title-text {
                         font-family: ${titleFontFamily};
-                        font-weight: 800;
+                        font-weight: ${titleFontWeight};
                         text-anchor: middle;
                         letter-spacing: 2px;
                     }
