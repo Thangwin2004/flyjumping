@@ -58,15 +58,17 @@ export class LeaderboardModal {
             originalRemove();
         };
 
+        const isEn = i18n.language === 'en';
+
         // Title Ribbon (Cyan) - Responsive 3D text styling
         const ribbon = document.createElement("div");
-        ribbon.style.cssText = "position:absolute; top:-25px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 0; width:70%; max-width:300px; text-align:center; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', sans-serif; font-size:clamp(16px, 4.5vw, 22px); font-weight:900; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;";
+        ribbon.style.cssText = `position:absolute; top:-25px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:8px 0; width:70%; max-width:300px; text-align:center; box-shadow:0 6px 0 #00B0FF; color:white; font-family:${isEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif"}; font-size:${isEn ? 'clamp(18px, 5vw, 24px)' : 'clamp(16px, 4.5vw, 22px)'}; font-weight:${isEn ? 'normal' : '900'}; letter-spacing:${isEn ? '2px' : '1px'}; -webkit-text-stroke: 1px #0288D1; text-shadow:0 3px 0 #0277BD, 0 4px 8px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;`;
         ribbon.innerText = t("leaderboard.title");
         card.appendChild(ribbon);
 
         // Header Labels - Aligned perfectly with row padding (35px = 20px container + 15px row)
         const header = document.createElement("div");
-        header.style.cssText = "display:flex; width:100%; justify-content:space-between; align-items:center; margin-top:45px; color:#00B0FF; font-family:'Be Vietnam Pro', sans-serif; font-weight:900; font-size:clamp(12px, 3.5vw, 15px); padding:0 35px; box-sizing:border-box;";
+        header.style.cssText = `display:flex; width:100%; justify-content:space-between; align-items:center; margin-top:45px; color:#00B0FF; font-family:${isEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif"}; font-weight:${isEn ? 'normal' : '900'}; font-size:clamp(13px, 3.8vw, 16px); letter-spacing:1px; padding:0 35px; box-sizing:border-box;`;
         header.innerHTML = `
             <span style="width:64px; text-align:center; flex-shrink:0;">${t("leaderboard.rank")}</span>
             <span style="flex:1; text-align:left; padding-left:8px;">${t("leaderboard.player")}</span>
@@ -80,7 +82,6 @@ export class LeaderboardModal {
         card.appendChild(listContainer);
 
         // Initial default / fallback data
-        const isEn = i18n.language === 'en';
         const defaultPlayers = [
             { name: "Thanh Tùng", score: 9999, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
             { name: "Marth3", score: 8540, avatar: "/assets/image/imagebldp/001_avatar_laclac.png" },
@@ -100,7 +101,7 @@ export class LeaderboardModal {
                 row.style.cssText = `display:flex; align-items:center; background:${bg}; border:1px solid #dcd6bf; border-radius:10px; padding:8px 15px; color:#241d4f; font-family:'Be Vietnam Pro', sans-serif; font-weight:bold; font-size:clamp(14px, 4vw, 17px); box-sizing:border-box;`;
                 
                 const rankNum = p.rank || (index + 1);
-                let rankContent = `<span style="font-size:22px; font-weight:900; color:#241d4f;">${rankNum}</span>`;
+                let rankContent = `<span style="font-family:'Lilita One', cursive, sans-serif; font-size:22px; color:#241d4f;">${rankNum}</span>`;
                 if (rankNum === 1) rankContent = `<span style="font-size:34px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.2);">🥇</span>`;
                 if (rankNum === 2) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥈</span>`;
                 if (rankNum === 3) rankContent = `<span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.25)); display:inline-block; transform:scale(1.15);">🥉</span>`;
@@ -117,7 +118,7 @@ export class LeaderboardModal {
                         </div>
                         <span style="overflow:hidden; text-overflow:ellipsis; font-weight:900;">${p.name}</span>
                     </div>
-                    <div style="width:90px; min-width:90px; text-align:right; font-weight:900; color:#E65100; font-size:18px; flex-shrink:0;">
+                    <div style="width:90px; min-width:90px; text-align:right; font-family:'Lilita One', cursive, sans-serif; font-size:20px; color:#E65100; flex-shrink:0; letter-spacing:0.5px;">
                         ${p.score}
                     </div>
                 `;
@@ -139,7 +140,7 @@ export class LeaderboardModal {
 
             footer.innerHTML = `
                 <div style="width:64px; min-width:64px; text-align:center; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
-                    <span style="font-size:20px; font-weight:900; color:#D84315;">${rankStr}</span>
+                    <span style="font-family:'Lilita One', cursive, sans-serif; font-size:20px; color:#D84315;">${rankStr}</span>
                 </div>
                 <div style="flex:1; display:flex; align-items:center; gap:8px; padding-left:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                     <div style="width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid #FFC107; overflow:hidden; flex-shrink:0;">
@@ -147,7 +148,7 @@ export class LeaderboardModal {
                     </div>
                     <span style="overflow:hidden; text-overflow:ellipsis; color:#D84315;">${playerName}</span>
                 </div>
-                <div style="width:90px; min-width:90px; text-align:right; color:#D84315; font-size:18px; font-weight:900; flex-shrink:0;">
+                <div style="width:90px; min-width:90px; text-align:right; color:#D84315; font-family:'Lilita One', cursive, sans-serif; font-size:22px; flex-shrink:0; letter-spacing:0.5px;">
                     ${myScore}
                 </div>
             `;

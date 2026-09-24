@@ -17,8 +17,9 @@ export class SettingsModal {
         const card = document.createElement('div');
         card.style.cssText = "background:#fbfaf5;border:8px solid #40C4FF;border-radius:24px;width:280px;max-width:92%;padding:35px 20px 25px 20px;display:flex;flex-direction:column;align-items:center;box-shadow:0 15px 30px rgba(0,0,0,0.5); text-align: center; position:relative;";
         
+        const isEn = i18n.language === 'en';
         const ribbon = document.createElement("div");
-        ribbon.style.cssText = "position:absolute; top:-30px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:10px 30px; box-shadow:0 6px 0 #00B0FF; color:white; font-family:'Be Vietnam Pro', sans-serif; font-size:20px; font-weight:900; letter-spacing:2px; text-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;";
+        ribbon.style.cssText = `position:absolute; top:-30px; background:linear-gradient(to bottom, #84FFFF, #40C4FF); border:4px solid #fff; border-radius:30px; padding:8px 32px; box-shadow:0 6px 0 #00B0FF; color:white; font-family:${isEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif"}; font-size:${isEn ? '24px' : '20px'}; font-weight:${isEn ? 'normal' : '900'}; letter-spacing:${isEn ? '2px' : '1px'}; -webkit-text-stroke: 1px #0288D1; text-shadow:0 3px 0 #0277BD, 0 4px 8px rgba(0,0,0,0.3); z-index:2; white-space:nowrap;`;
         ribbon.innerText = t("settings.title");
         card.appendChild(ribbon);
 
@@ -190,8 +191,14 @@ export class SettingsModal {
         card.appendChild(langBtnContainer);
 
         const updateLocaleUI = () => {
+            const currentIsEn = i18n.language === 'en';
             ribbon.innerText = t("settings.title");
+            ribbon.style.fontFamily = currentIsEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif";
+            ribbon.style.fontSize = currentIsEn ? "24px" : "20px";
+            ribbon.style.fontWeight = currentIsEn ? "normal" : "900";
+            ribbon.style.letterSpacing = currentIsEn ? "2px" : "1px";
             langLabel.innerText = t("settings.language");
+            langLabel.style.fontFamily = currentIsEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif";
             applyLangStyle(viBtn, i18n.language === 'vi');
             applyLangStyle(enBtn, i18n.language === 'en');
         };

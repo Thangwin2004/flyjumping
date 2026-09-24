@@ -33,7 +33,7 @@ export class GameScene extends THREE.Group {
         
         // UI layer (HTML instead of Pixi)
         this.scoreElement = document.createElement('div');
-        this.scoreElement.style.cssText = "position:absolute;top:20px;left:30px;font-family:'Be Vietnam Pro', sans-serif;font-size:58px;color:#ffffff;-webkit-text-stroke:2px #F50057;text-shadow:0 6px 0 #F50057, 0 8px 15px rgba(0,0,0,0.4);z-index:100;pointer-events:none; letter-spacing: 2px;";
+        this.scoreElement.style.cssText = "position:absolute;top:20px;left:30px;font-family:'Lilita One', 'Be Vietnam Pro', cursive, sans-serif;font-size:58px;color:#ffffff;-webkit-text-stroke:2px #F50057;text-shadow:0 6px 0 #C2185B, 0 8px 15px rgba(0,0,0,0.4);z-index:100;pointer-events:none; letter-spacing: 2px;";
         this.scoreElement.innerText = "0";
         document.getElementById('game-container').appendChild(this.scoreElement);
         
@@ -307,20 +307,29 @@ export class GameScene extends THREE.Group {
                     </linearGradient>
                 </defs>
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Be+Vietnam+Pro:ital,wght@0,900;1,900&display=swap');
                     .ms-text {
-                        font-family:'Be Vietnam Pro', sans-serif;
-                        font-weight: 800;
+                        font-family: 'Lilita One', 'Be Vietnam Pro', cursive, sans-serif;
+                        font-weight: normal;
                         text-anchor: middle;
                         letter-spacing: 2px;
                     }
                 </style>
-                <!-- 3D Shadow layer (Crisp 3px offset) -->
-                <g transform="translate(0, 3)">
-                    <text x="210" y="55" font-size="38" fill="#8D1400" stroke="#8D1400" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke fill" class="ms-text">${msg}</text>
+                <!-- 1. Deep 3D Shadow -->
+                <g transform="translate(0, 6)">
+                    <text x="210" y="55" font-size="42" fill="#8D1400" stroke="#8D1400" stroke-width="8" stroke-linejoin="round" class="ms-text">${msg}</text>
                 </g>
-                <!-- Foreground Text -->
+                <!-- 2. Mid 3D Bevel -->
+                <g transform="translate(0, 3)">
+                    <text x="210" y="55" font-size="42" fill="#BF360C" stroke="#BF360C" stroke-width="7" stroke-linejoin="round" class="ms-text">${msg}</text>
+                </g>
+                <!-- 3. Thick White Sticker Outline -->
                 <g>
-                    <text x="210" y="55" font-size="38" fill="url(#msGrad)" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill" class="ms-text">${msg}</text>
+                    <text x="210" y="55" font-size="42" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" class="ms-text">${msg}</text>
+                </g>
+                <!-- 4. Pure Sunny Gold Gradient Face -->
+                <g>
+                    <text x="210" y="55" font-size="42" fill="url(#msGrad)" stroke="none" class="ms-text">${msg}</text>
                 </g>
             </svg>
         `;
@@ -1101,7 +1110,12 @@ export class GameScene extends THREE.Group {
             { transform: "scale(1)" }, { transform: "scale(1.1) rotate(5deg)" }, { transform: "scale(1)" }, { transform: "scale(1.1) rotate(-5deg)" }, { transform: "scale(1)" }
         ], { duration: 2000, iterations: Infinity, easing: "ease-in-out" });
 
+        const isEn = i18n.language === 'en';
         const titleText = t("gameover.title");
+        const goFont = isEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif";
+        const goWeight = isEn ? "400" : "900";
+        const goSize = isEn ? "42" : "36";
+
         const title = document.createElement('div');
         title.style.cssText = "width: 100%; display: flex; justify-content: center; margin-bottom: 8px; margin-top: 5px;";
         title.innerHTML = `
@@ -1115,28 +1129,38 @@ export class GameScene extends THREE.Group {
                     </linearGradient>
                 </defs>
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Be+Vietnam+Pro:ital,wght@0,900;1,900&display=swap');
                     .go-title-text {
-                        font-family:'Be Vietnam Pro', sans-serif;
-                        font-weight: 800;
+                        font-family: ${goFont};
+                        font-weight: ${goWeight};
                         text-anchor: middle;
                         letter-spacing: 2px;
                     }
                 </style>
-                <!-- 3D Base Shadow (Crisp 3px offset) -->
-                <g transform="translate(0, 3)">
-                    <text x="170" y="52" font-size="38" fill="#013766" stroke="#013766" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke fill" class="go-title-text">${titleText}</text>
+                <!-- 1. Deep 3D Shadow -->
+                <g transform="translate(0, 6)">
+                    <text x="170" y="52" font-size="${goSize}" fill="#003366" stroke="#003366" stroke-width="8" stroke-linejoin="round" class="go-title-text">${titleText}</text>
                 </g>
-                <!-- Foreground Text with White Stroke + Gradient Fill -->
+                <!-- 2. Mid 3D Bevel -->
+                <g transform="translate(0, 3)">
+                    <text x="170" y="52" font-size="${goSize}" fill="#0288D1" stroke="#0288D1" stroke-width="7" stroke-linejoin="round" class="go-title-text">${titleText}</text>
+                </g>
+                <!-- 3. Thick White Sticker Outline -->
                 <g>
-                    <text x="170" y="52" font-size="38" fill="url(#gameOverGrad)" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill" class="go-title-text">${titleText}</text>
+                    <text x="170" y="52" font-size="${goSize}" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" class="go-title-text">${titleText}</text>
+                </g>
+                <!-- 4. Pure Cyan-to-Blue Gradient Face -->
+                <g>
+                    <text x="170" y="52" font-size="${goSize}" fill="url(#gameOverGrad)" stroke="none" class="go-title-text">${titleText}</text>
                 </g>
             </svg>
         `;
 
         const scoreText = document.createElement('div');
-        scoreText.style.cssText = "font-size: 58px; font-weight: 900; font-family:'Be Vietnam Pro', sans-serif; margin: 10px 0 20px 0; letter-spacing: 2px; text-align: center;";
+        scoreText.style.cssText = "font-size: 58px; font-weight: 900; font-family:'Lilita One', 'Be Vietnam Pro', cursive, sans-serif; margin: 10px 0 20px 0; letter-spacing: 2px; text-align: center;";
         const renderScoreMarkup = (val) => `
             <span class="score-display-num" style="
+                font-family: 'Lilita One', 'Be Vietnam Pro', cursive, sans-serif;
                 background: linear-gradient(to bottom, #FFF59D 10%, #FFB300 50%, #E65100 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -1185,7 +1209,7 @@ export class GameScene extends THREE.Group {
         const svgs = {
             'home': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
             'replay': '<svg viewBox="0 0 24 24" width="34" height="34"><path fill="#ffffff" d="M17.65 6.35A7.95 7.95 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>',
-            'ad': '<svg viewBox="0 0 54 30" width="46" height="26"><rect x="0" y="0" width="54" height="30" rx="8" fill="#ffffff" /><path d="M12,9 L12,21 L21,15 Z" fill="#E65100" /><text x="36" y="21" font-family="Be Vietnam Pro, sans-serif" font-size="18" fill="#E65100" text-anchor="middle">x2</text></svg>'
+            'ad': '<svg viewBox="0 0 54 30" width="46" height="26"><rect x="0" y="0" width="54" height="30" rx="8" fill="#ffffff" /><path d="M12,9 L12,21 L21,15 Z" fill="#E65100" /><text x="36" y="22" font-family="\'Lilita One\', \'Be Vietnam Pro\', cursive, sans-serif" font-weight="900" font-size="19" fill="#E65100" text-anchor="middle">x2</text></svg>'
         };
 
         const homeBtn = createNavBtn(svgs['home'], () => {

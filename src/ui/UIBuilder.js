@@ -1,7 +1,7 @@
 import { AdManager } from '../managers/AdManager';
 import { gameApp } from '../core/Application';
 import { AudioManager } from '../managers/AudioManager';
-import { t } from '../managers/I18nManager';
+import { i18n, t } from '../managers/I18nManager';
 
 export const UIBuilder = {
     getUILayer() {
@@ -66,6 +66,7 @@ export const UIBuilder = {
     },
 
     createTextBtn(text, onClick, colorTop, colorBot, colorShadow) {
+        const isEn = i18n.language === 'en';
         const btn = document.createElement("button");
         btn.className = "ui-button";
         btn.style.cssText = `
@@ -76,8 +77,10 @@ export const UIBuilder = {
             cursor: pointer; transition: transform 0.1s; 
             display: flex; justify-content: center; align-items: center; 
             padding: 15px 40px; outline: none;
-            color: white; font-size: 24px; font-weight: 900;
-            font-family:'Be Vietnam Pro', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            color: white; font-size: 24px; font-weight: ${isEn ? '400' : '900'};
+            font-family: ${isEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif"}; 
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         `;
         
         btn.innerHTML = text;
@@ -116,7 +119,12 @@ export const UIBuilder = {
             originalRemove();
         };
 
+        const isEn = i18n.language === 'en';
         const titleText = t("revive.title");
+        const revFont = isEn ? "'Lilita One', 'Be Vietnam Pro', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif";
+        const revWeight = isEn ? "400" : "900";
+        const revSize = isEn ? "32" : "28";
+
         const title = document.createElement("div");
         title.style.cssText = "width: 100%; display: flex; justify-content: center; margin-bottom: 12px;";
         title.innerHTML = `
@@ -130,20 +138,29 @@ export const UIBuilder = {
                     </linearGradient>
                 </defs>
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Be+Vietnam+Pro:ital,wght@0,900;1,900&display=swap');
                     .rev-title-text {
-                        font-family:'Be Vietnam Pro', sans-serif;
-                        font-weight: 800;
+                        font-family: ${revFont};
+                        font-weight: ${revWeight};
                         text-anchor: middle;
                         letter-spacing: 1.5px;
                     }
                 </style>
-                <!-- 3D Shadow layer (Crisp 3px offset) -->
-                <g transform="translate(0, 3)">
-                    <text x="180" y="44" font-size="28" fill="#013766" stroke="#013766" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke fill" class="rev-title-text">${titleText}</text>
+                <!-- 1. Deep 3D Shadow -->
+                <g transform="translate(0, 5)">
+                    <text x="180" y="44" font-size="${revSize}" fill="#003366" stroke="#003366" stroke-width="7" stroke-linejoin="round" class="rev-title-text">${titleText}</text>
                 </g>
-                <!-- Foreground Text -->
+                <!-- 2. Mid 3D Bevel -->
+                <g transform="translate(0, 2.5)">
+                    <text x="180" y="44" font-size="${revSize}" fill="#01579B" stroke="#01579B" stroke-width="6" stroke-linejoin="round" class="rev-title-text">${titleText}</text>
+                </g>
+                <!-- 3. Thick White Sticker Outline -->
                 <g>
-                    <text x="180" y="44" font-size="28" fill="url(#reviveTitleGrad)" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill" class="rev-title-text">${titleText}</text>
+                    <text x="180" y="44" font-size="${revSize}" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" class="rev-title-text">${titleText}</text>
+                </g>
+                <!-- 4. Pure Cyan Gradient Face -->
+                <g>
+                    <text x="180" y="44" font-size="${revSize}" fill="url(#reviveTitleGrad)" stroke="none" class="rev-title-text">${titleText}</text>
                 </g>
             </svg>
         `;
@@ -156,7 +173,7 @@ export const UIBuilder = {
         ], { duration: 1200, iterations: Infinity, easing: "ease-in-out" });
         
         const yesBtn = document.createElement("button");
-        yesBtn.style.cssText = "background:linear-gradient(to bottom, #B2FF59, #76FF03);border:none;border-radius:12px;padding:10px 40px;color:white;font-size:24px;font-weight:900;font-family:'Be Vietnam Pro', sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 #64DD17, 0 8px 10px rgba(0,0,0,0.3);transition:transform 0.1s;width:100%;margin-bottom:15px;";
+        yesBtn.style.cssText = `background:linear-gradient(to bottom, #B2FF59, #76FF03);border:none;border-radius:12px;padding:12px 30px;color:white;font-size:22px;font-weight:${isEn ? '400' : '900'};font-family:${isEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif"};cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 #64DD17, 0 8px 10px rgba(0,0,0,0.3);transition:transform 0.1s;width:100%;margin-bottom:15px;letter-spacing:1px;`;
         
         yesBtn.innerHTML = `
             <img src="/assets/iconbtn/images.png" style="height:30px;margin-right:10px;">
@@ -180,7 +197,7 @@ export const UIBuilder = {
         
         const skipText = document.createElement("div");
         skipText.innerText = t("revive.no");
-        skipText.style.cssText = "font-family:'Be Vietnam Pro', sans-serif;font-size:16px;color:#FF80AB;text-decoration:underline;cursor:pointer;font-weight:bold;";
+        skipText.style.cssText = `font-family:${isEn ? "'Lilita One', cursive, sans-serif" : "'Be Vietnam Pro', sans-serif"};font-size:17px;color:#FF80AB;text-decoration:underline;cursor:pointer;font-weight:${isEn ? 'normal' : 'bold'};letter-spacing:1px;`;
         skipText.onclick = () => {
             AudioManager.playClickSFX();
             overlay.remove();
